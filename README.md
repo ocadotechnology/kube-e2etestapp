@@ -17,6 +17,7 @@ TEST_SERVICE | Service name to create during testing | kubee2etests
 FLASK_PORT | Port on which to run flask app | 8081
 STATSD_PORT | Port on which `statsd` is running | 8125
 LOG_LEVEL | log level for test runner | INFO
+DOCKER_REGISTRY_HOST | Host from which to pull nginx pod for deployment based tests. We allow only configuration of the host, not the image because service and get requests expect that we'll be able to get something from an nginx web server. | `` 
 
 ## Metrics and alerts
 All metrics created by this application are prefixed by `e2etest.` and are measured using the Statsd client library. For more information on Statsd metric types please see the [statsd project repo](https://github.com/etsy/statsd).
