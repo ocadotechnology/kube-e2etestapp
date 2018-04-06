@@ -2,9 +2,7 @@
 
 This application tests the features of Kubernetes which we provide in a Production environment.
 
-In addition, performance metrics are captured by each runner using statsd to measure the effectiveness of our setup and help highlight problems with it. The kubernetes manifests for this application can be found in [kube-monitoring](https://gitlab.tech.lastmile.com/kubernetes/kube-monitoring/blob/master/manifests/e2etests.yaml) and export statsd metrics into labelled prometheus metrics.
-
-JIRA ticket: [PA-252](https://jira.ocado.com/jira/browse/PA-252)
+In addition, performance metrics are captured by each runner using statsd to measure the effectiveness of our setup and help highlight problems with it. The file [`e2etests.yaml`](e2etests.yaml) provides yaml for deploying this to Kubernetes including RBAC permissions and statsd configuration.
 
 ## Configuration
 The following parameters are provided for configuration
