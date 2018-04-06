@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Kubernetes Healthcheck</title>
+        <link href="{{ url_for('static',filename='css/bootstrap-3.3.2.min.css') }}" rel="stylesheet">
+        <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    </head>
+    <body>
+        <h1>Kubernetes status</h1>
+        {% if errors %}
+            {% for error in errors %}
+            <div class="bg-danger text-danger jumbotron">
+                {{ error }}
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% if results %}
+            <table class="status-table">
+                <thead>
+                <tr>
+                    <td>
+                        Namespace
+                    </td>
+                    <td>
+                        Test name
+                    </td>
+                    <td>
+                        Result
+                    </td>
+                    <td>
+                        Details
+                    </td>
+                    <td>
+                        Time
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+                {% for test, value in results.items() %}
+                    {% if value.passing %}
+                    <tr class="bg-success text-success">
+
+                    {% else %}
+                    <tr class="bg-danger text-danger">
+                    {% endif %}
+                        <td>{{ value.namespace }}</td>
+                        <td>{{value.name}}</td>
+                        <td>
+                            {% if value.passing %}
+                                passing
+                            {% else %}
+                                failing
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if value.info %}
+                                {% for err in value.info %}
+                                    {{ err[0] }} ({{ err[1] }} instances)
+                                    <br />
+                                {% endfor %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{value.time}}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            No tests ran yet, waiting...
+        {% endif %}
+
+        <script src="{{ url_for('static',filename='js/jquery-1.12.4.min.js') }}"></script>
+        <script src="{{ url_for('static',filename='js/bootstrap-3.3.2.min.js') }}"></script>
+    </body>
+</html>

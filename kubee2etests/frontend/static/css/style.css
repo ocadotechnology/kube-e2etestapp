@@ -1,0 +1,15 @@
+table.status-table {
+    margin: 20px;
+}
+
+table.status-table tbody tr.bg-success {
+    border: 1px solid #3c763d;
+}
+
+table.status-table tbody tr.bg-danger {
+    border: 1px solid #a94442;
+}
+
+table.status-table td {
+    padding: 3px;
+}

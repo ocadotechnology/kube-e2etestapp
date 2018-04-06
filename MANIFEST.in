@@ -1,0 +1,2 @@
+include versioneer.py
+include kubee2etests/_version.py
