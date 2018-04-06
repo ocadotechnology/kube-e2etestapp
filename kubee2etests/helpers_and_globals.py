@@ -34,7 +34,8 @@ TEST_SERVICE = "kubee2etests"
 TEST_DEPLOYMENT = "e2etestapp"
 
 # image from which to base the container, html string for index pages
-TEST_DEPLOYMENT_IMAGE = "mirror-hub.docker.tech.lastmile.com/nginx:alpine@sha256:aa0daf2b17c370a1da371a767110a43b390a9db90b90d2d1b07862dc81754d61"
+NGINX_IMAGE = "nginx:alpine@sha256:aa0daf2b17c370a1da371a767110a43b390a9db90b90d2d1b07862dc81754d61"
+TEST_DEPLOYMENT_IMAGE = os.path.join(os.environ.get("DOCKER_REGISTRY_HOST", ''), NGINX_IMAGE)
 TEST_DEPLOYMENT_INDEX = """<html>
       <body>
         <h1>
