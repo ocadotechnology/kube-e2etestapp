@@ -29,7 +29,7 @@ spec:
           servicePort: http
   tls:
   - hosts:
-    - status.kube-monitoring.K8S_INGRESS_ROOT_DOMAIN_NAME
+    - status.FIXME
     secretName: status-ingress-cert
 ---
 # OPTIONAL: rip this/secretName part above out or update it if you aren't using kube-cert-manager.
@@ -39,6 +39,6 @@ metadata:
   name: status-ingress
   namespace: kube-monitoring
 spec:
-  domain: status.kube-monitoring.K8S_INGRESS_ROOT_DOMAIN_NAME
+  domain: status.FIXME
   provider: route53
   secretName: status-ingress-cert
