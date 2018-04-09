@@ -37,7 +37,6 @@ apiVersion: stable.k8s.psg.io/v1
 kind: Certificate
 metadata:
   name: status-ingress
-  namespace: kube-monitoring
 spec:
   domain: status.FIXME
   provider: route53
