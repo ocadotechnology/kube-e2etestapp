@@ -1,6 +1,6 @@
-# End to End Kubernetes Test App
+# Kubernetes End to End Test App
 
-This application tests the features of Kubernetes which we provide in a Production environment.
+This application tests the features of Kubernetes periodically in order to collect data and highlight symptoms of underlying issues.
 
 In addition, performance metrics are captured by each runner using statsd to measure the effectiveness of our setup and help highlight problems with it. The file [`e2etests.yaml`](e2etests.yaml) provides yaml for deploying this to Kubernetes including RBAC permissions and statsd configuration.
 
