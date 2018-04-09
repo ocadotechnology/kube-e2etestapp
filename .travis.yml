@@ -19,10 +19,10 @@ after_script:
 
 before_deploy:
   - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
-  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:latest"
-  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${TRAVIS_COMMIT}"
+  - docker tag "${$TRAVIS_REPO_SLUG}" "${TRAVIS_REPO_SLUG}:latest"
+  - docker tag "${$TRAVIS_REPO_SLUG}" "${$TRAVIS_REPO_SLUG}:${TRAVIS_COMMIT}"
 deploy:
   provider: script
-  script: docker push "${IMAGE_NAME}:latest" && docker push "${IMAGE_NAME}:${TRAVIS_COMMIT}"
+  script: docker push "${$TRAVIS_REPO_SLUG}:latest" && docker push "${$TRAVIS_REPO_SLUG}:${TRAVIS_COMMIT}"
   on:
     branch: master
