@@ -2,7 +2,7 @@
 
 This application tests the features of Kubernetes periodically in order to collect data and highlight symptoms of underlying issues.
 
-In addition, performance metrics are captured by each runner using statsd to measure the effectiveness of our setup and help highlight problems with it. The file [`e2etests.yaml`](e2etests.yaml) provides yaml for deploying this to Kubernetes including RBAC permissions and statsd configuration.
+Performance metrics are captured by each test using statsd to measure the effectiveness of the cluster and help highlight problems with it. See [Kubernetes Manifests](#kubernetes-manifests) for detail on how to deploy this. 
 
 ## Configuration
 The following environment variables can be used to configure the e2etest container.
@@ -65,6 +65,7 @@ The application provides a dashboard to quickly view the results of the last run
 
 This is intended to be a first port of call for identifying problems with the platform, supplemented by metrics from Prometheus, and has an ingress so you can view it at `status.<your domain here>`
 
+To enable this view you need the manifests in `contrib/frontend.yaml`
 ## Test List
 ### Namespace tests
 1. create a namespace (name set by environment variable, or defaulted to kubee2etests)
