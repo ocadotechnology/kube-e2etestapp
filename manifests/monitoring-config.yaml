@@ -1,4 +1,5 @@
 ---
+# For use with the prometheus operator. FIXME: update the labels etc to match your own prometheus configuration if using.
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
