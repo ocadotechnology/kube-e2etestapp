@@ -21,7 +21,7 @@ class TestSuitePage(unittest.TestCase):
 
     def test_get_none_ran(self):
         response = self.app.get('/')
-        self.assertIn("No tests ran yet, waiting...", str(response.data))
+        self.assertIn("No tests have ran yet, waiting...", str(response.data))
 
     def test_get_with_one_passing(self):
         TEST_STATUS.put(StatusEvent("Test passed", True))
