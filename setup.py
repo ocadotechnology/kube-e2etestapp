@@ -31,9 +31,8 @@ setup(
     include_package_data=True,
     description='Package for testing kubernetes end to end, intended for live clusters',
     long_description=README,
-    url='https://gitlab.tech.lastmile.com/kubernetes/end2endtestapp',
-    author='Charlotte Godley',
-    author_email='c.godley@ocado.com',
+    url='https://github.com/ocadotechnology/kube-e2etestapp',
+    author='Ocado Technology',
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
