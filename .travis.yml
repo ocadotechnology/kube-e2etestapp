@@ -6,12 +6,31 @@ env:
   global:
     - REGISTRY_USER=ocadotechnology
     # REGISTRY_PASS=...
+    - VERSION=$TRAVIS_TAG
     - secret: "<something long>"
 
 before_script:
   - docker pull "$TRAVIS_REPO_SLUG" || true
 script:
-  - docker build --pull --cache-from "$TRAVIS_REPO_SLUG" --tag "$TRAVIS_REPO_SLUG" .
+  - |
+    if [ -n "${TRAVIS_TAG}" ]; then
+      VERSION=$TRAVIS_COMMIT
+    fi
+  - |
+    docker build --pull --cache-from "$IMAGE_NAME" --tag "$IMAGE_NAME" \
+    --label="org.label-schema.build-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    --label="org.label-schema.vendor=Ocado Technology" \
+    --label="org.label-schema.schema-version=1.0" \
+    --label="org.label-schema.vcs-url=${VCS_SOURCE}" \
+    --label="org.label-schema.version=${VERSION}" \
+    --label="org.label-schema.vcs-ref=${TRAVIS_COMMIT}" \
+    --label="org.opencontainers.image.created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    --label="org.opencontainers.image.vendor=Ocado Technology" \
+    --label="org.opencontainers.image.source=${VCS_SOURCE}" \
+    --label="org.opencontainers.image.version=${VERSION}" \
+    --label="org.opencontainers.image.revision=${TRAVIS_COMMIT}" \
+    --label="org.opencontainers.image.authors=$(git log --format='%aE' Dockerfile | sort -u | tr '\n' ' ')" \
+  .
   - python setup.py test
 
 after_script:
@@ -20,7 +39,7 @@ after_script:
 before_deploy:
   - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
   - docker tag "${$TRAVIS_REPO_SLUG}" "${TRAVIS_REPO_SLUG}:latest"
-  - docker tag "${$TRAVIS_REPO_SLUG}" "${$TRAVIS_REPO_SLUG}:${TRAVIS_COMMIT}"
+  - docker tag "${$TRAVIS_REPO_SLUG}" "${$TRAVIS_REPO_SLUG}:${VERSION}"
 deploy:
   provider: script
   script: docker push "${$TRAVIS_REPO_SLUG}:latest" && docker push "${$TRAVIS_REPO_SLUG}:${TRAVIS_COMMIT}"
