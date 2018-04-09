@@ -18,6 +18,7 @@ FLASK_PORT | Port on which to run flask app | 8081
 STATSD_PORT | Port on which `statsd` is running | 8125
 LOG_LEVEL | log level for test runner | INFO
 DOCKER_REGISTRY_HOST | Host from which to pull nginx pod for deployment based tests. We allow only configuration of the host, not the image because service and get requests expect that we'll be able to get something from an nginx web server. | `` 
+CUSTOM_TEST_DEPLOYMENT_LABELS | Dictionary of key-value pairs to add to the labels applied to every test deployment. Will already be labelled with `app: hello-minikube` | `'{}'`
 
 ### Kubernetes manifests
 Manifests are in `./manifests` and split into 3 files in order to rip out anything you might not need.
