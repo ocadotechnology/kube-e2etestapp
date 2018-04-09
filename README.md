@@ -21,11 +21,10 @@ DOCKER_REGISTRY_HOST | Host from which to pull nginx pod for deployment based te
 CUSTOM_TEST_DEPLOYMENT_LABELS | Dictionary of key-value pairs to add to the labels applied to every test deployment. Will already be labelled with `app: hello-minikube` | `'{}'`
 
 ### Kubernetes manifests
-Manifests are in `./manifests` and split into 3 files in order to rip out anything you might not need.
+Manifests required to run this app completely headless are in `./manifests`. In addition to this the `./contrib` directory contains some manifests you may find useful:
 
-- `./manifests/e2etests.yaml` contains everything you need to run all of the tests, with a statsd and prometheus exporter sidecar container on the deployment. It is noted where you can rip the two containers out if you don't intend to use prometheus or don't want to collect metrics at all. At the moment the namespace test is commented out due to a weave-npc issue (found by running this test).
-- `./manifests/monitoring-config.yaml` contains configuration for monitoring. There are comments to indicate what each entry does.
-- `./manifests/frontend.yaml` contains configuration for running the frontend status dashboard. Optionally, it includes a certificate resource for use with `kube-cert-manager`. The ingress host name also needs changing to match what you use on your cluster.
+- `./contrib/monitoring-config.yaml` contains configuration for monitoring. There are comments to indicate what each entry does.
+- `./contrib/frontend.yaml` contains configuration for running the frontend status dashboard. Optionally, it includes a certificate resource for use with `kube-cert-manager`. The ingress host name also needs changing to match what you use on your cluster.
 
 ## Metrics and alerts
 All metrics created by this application are prefixed by `e2etest.` and are measured using the Statsd client library. For more information on Statsd metric types please see the [statsd project repo](https://github.com/etsy/statsd). We use a Statsd -> Prometheus bridge when deploying this because:
