@@ -58,3 +58,18 @@ data:
       ],
       backends: ['./backends/repeater']
     }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: e2etests-prometheus
+  labels:
+    tier: e2etests-prometheus
+spec:
+  selector:
+    app: e2etests
+  ports:
+  - name: prometheus
+    protocol: TCP
+    port: 80
+    targetPort: prometheus

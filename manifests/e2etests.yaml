@@ -391,54 +391,6 @@ spec:
       serviceAccountName: e2etests
 ---
 apiVersion: v1
-kind: Service
-metadata:
-  name: e2etests-status
-  labels:
-    tier: flask
-spec:
-  selector:
-    app: e2etests
-  ports:
-  - name: http
-    protocol: TCP
-    port: 80
-    targetPort: flask
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: e2etests-prometheus
-  labels:
-    tier: e2etests-prometheus
-spec:
-  selector:
-    app: e2etests
-  ports:
-  - name: prometheus
-    protocol: TCP
-    port: 80
-    targetPort: prometheus
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: e2etests
-spec:
-  rules:
-  - host: status.kube-monitoring.K8S_INGRESS_ROOT_DOMAIN_NAME
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: e2etests-status
-          servicePort: http
-  tls:
-  - hosts:
-    - status.kube-monitoring.K8S_INGRESS_ROOT_DOMAIN_NAME
-    secretName: status-ingress-cert
----
-apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: e2etests
