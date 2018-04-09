@@ -265,8 +265,7 @@ spec:
           periodSeconds: 3
         # OPTIONAL: if you don't want any metrics you can rip out this container.
       - name: statsd
-        # todo open source this image, too?
-        image: mirror-internal.docker.tech.lastmile.com/platform-automation/statsd-docker:3be5f776f490047a58e68791af29601d8f02a45f@sha256:7bfdfed5859153c4179bae57d2cb3dbfb48fad94d2ccded185283f5ab5762493
+        image: ocadotechnology/statsd:latest
         ports:
         - name: statsd
           containerPort: 8125
