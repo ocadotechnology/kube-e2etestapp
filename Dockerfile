@@ -1,4 +1,4 @@
-FROM mirror-hub.docker.tech.lastmile.com/python:3.5-alpine
+FROM python:3.5-alpine
 RUN apk --no-cache add curl
 RUN mkdir -p /app/kubee2etests/frontend/static/css && \
      mkdir -p /app/kubee2etests/frontend/static/js && \
