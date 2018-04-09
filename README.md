@@ -5,7 +5,7 @@ This application tests the features of Kubernetes which we provide in a Producti
 In addition, performance metrics are captured by each runner using statsd to measure the effectiveness of our setup and help highlight problems with it. The file [`e2etests.yaml`](e2etests.yaml) provides yaml for deploying this to Kubernetes including RBAC permissions and statsd configuration.
 
 ## Configuration
-The following parameters are provided for configuration
+The following environment variables can be used to configure the e2etest container.
 
 Name | description | default 
 --- | --- | --- 
@@ -18,6 +18,13 @@ FLASK_PORT | Port on which to run flask app | 8081
 STATSD_PORT | Port on which `statsd` is running | 8125
 LOG_LEVEL | log level for test runner | INFO
 DOCKER_REGISTRY_HOST | Host from which to pull nginx pod for deployment based tests. We allow only configuration of the host, not the image because service and get requests expect that we'll be able to get something from an nginx web server. | `` 
+
+### Kubernetes manifests
+Manifests are in `./manifests` and split into 3 files in order to rip out anything you might not need.
+
+- `./manifests/e2etests.yaml` contains everything you need to run all of the tests, with a statsd and prometheus exporter sidecar container on the deployment. It is noted where you can rip the two containers out if you don't intend to use prometheus or don't want to collect metrics at all.
+- `./manifests/monitoring-config.yaml` contains configuration for monitoring. There are comments to indicate what each entry does.
+- `./manifests/frontend.yaml` contains configuration for running the frontend status dashboard. Optionally, it includes a certificate resource for use with `kube-cert-manager`. The ingress host name also needs changing to match what you use on your cluster.
 
 ## Metrics and alerts
 All metrics created by this application are prefixed by `e2etest.` and are measured using the Statsd client library. For more information on Statsd metric types please see the [statsd project repo](https://github.com/etsy/statsd).
