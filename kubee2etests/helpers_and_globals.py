@@ -1,6 +1,6 @@
 import kubernetes
 import logging
-import json
+import ast
 import datetime
 
 from enum import Enum
@@ -55,8 +55,9 @@ TEST_INDEX_NAME_CHANGED = 'hello-kubernetes'
 TEST_VOLUME_CLAIM_NAME = 'test-claim'
 
 TEST_REPLICAS = 3
-TEST_LABELS = {'app': 'hellominikube',
-               'k8s.osp.tech/status-ignore': 'true'}
+CUSTOM_LABELS = ast.literal_eval(os.environ.get("CUSTOM_TEST_DEPLOYMENT_LABELS", '{}'))
+TEST_LABELS = {'app': 'hellominikube'}
+TEST_LABELS.update(CUSTOM_LABELS)
 TEST_CONTAINER_PORT = 80
 
 # time to wait for events before timing out, used in wait_on_event
