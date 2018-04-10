@@ -44,13 +44,7 @@ before_deploy:
 - docker tag "${TRAVIS_REPO_SLUG}" "${TRAVIS_REPO_SLUG}:latest"
 - docker tag "${TRAVIS_REPO_SLUG}" "${TRAVIS_REPO_SLUG}:${TRAVIS_COMMIT}"
 deploy:
-  skip_cleanup: true
   provider: script
-  script:
-  - |
-    if [ "${TRAVIS_TAG}" ]; then
-      docker push "${TRAVIS_REPO_SLUG}:${TRAVIS_TAG}"
-    fi
-  - docker push "${TRAVIS_REPO_SLUG}:latest" && docker push "${TRAVIS_REPO_SLUG}:${TRAVIS_COMMIT}"
+  script: bash .travis/docker-push.sh
   on:
     branch: master
