@@ -1,0 +1,76 @@
+---
+# For use with the prometheus operator. FIXME: update the labels etc to match your own prometheus configuration if using.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: e2etests
+  labels:
+    tier: e2etests
+    k8s-app: e2etests
+spec:
+  selector:
+    matchLabels:
+      tier: e2etests-prometheus
+  endpoints:
+  - port: prometheus
+    interval: 10s
+---
+# OPTIONAL: At Ocado we use a Statsd -> Prometheus bridge, this mapping defines how statsd bucket metrics map onto Prometheus metrics with labelling config.
+# If you intend to use just statsd, you can rip this out and the exporter in the deployment.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: statsd-exporter-map
+data:
+  mapping.conf: |
+    e2etest.action.*.*.*
+    name="e2etest_action_seconds_total"
+    test="$1"
+    resource="$2"
+    action="$3"
+
+    e2etest.error.*.*.*.*
+    name="e2etest_errors_total"
+    test="$1"
+    resource="$2"
+    type="$3"
+    error="$4"
+
+    e2etest.http.*.*.*
+    name="e2etest_http_requests_total"
+    test="$1"
+    resource="$2"
+    result="$3"
+---
+# OPTIONAL: this defines that the statsd service will repeat onto the prometheus exporter.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: statsd-config
+data:
+  config.js: |
+    {
+      port: 8125,
+      repeater: [
+        {
+          host: '127.0.0.1',
+          port: 9125
+        }
+      ],
+      backends: ['./backends/repeater']
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: e2etests-prometheus
+  labels:
+    tier: e2etests-prometheus
+spec:
+  selector:
+    app: e2etests
+  ports:
+  - name: prometheus
+    protocol: TCP
+    port: 80
+    targetPort: prometheus
