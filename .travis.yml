@@ -37,10 +37,19 @@ after_script:
 - docker images
 before_deploy:
 - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
+- |
+  if [ -n "${TRAVIS_TAG}" ]; then
+    VERSION=$TRAVIS_COMMIT
+  fi
 - docker tag "${TRAVIS_REPO_SLUG}" "${TRAVIS_REPO_SLUG}:latest"
 - docker tag "${TRAVIS_REPO_SLUG}" "${TRAVIS_REPO_SLUG}:${VERSION}"
 deploy:
   provider: script
-  script: docker push "${TRAVIS_REPO_SLUG}:latest" && docker push "${TRAVIS_REPO_SLUG}:${TRAVIS_COMMIT}"
+  script:
+  - |
+    if [ -n "${TRAVIS_TAG}" ]; then
+      VERSION=$TRAVIS_COMMIT
+    fi
+  - docker push "${TRAVIS_REPO_SLUG}:latest" && docker push "${TRAVIS_REPO_SLUG}:${VERSION}"
   on:
     branch: master
