@@ -20,7 +20,7 @@ metadata:
   name: e2etests
 spec:
   rules:
-  - host: status.kube-monitoring.K8S_INGRESS_ROOT_DOMAIN_NAME
+  - host: status.FIXME
     http:
       paths:
       - path: /
