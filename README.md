@@ -1,4 +1,4 @@
-# Kubernetes End to End Test App
+# Kubernetes End to End Test App [![Build Status](https://travis-ci.org/ocadotechnology/kube-e2etestapp.svg?branch=master)](https://travis-ci.org/ocadotechnology/kube-e2etestapp)
 
 This application tests the features of Kubernetes periodically in order to collect data and highlight symptoms of underlying issues.
 
