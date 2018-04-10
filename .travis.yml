@@ -1,45 +1,44 @@
 language: python
+python:
+- '3.6'
 sudo: required
 services:
-  - docker
+- docker
 env:
   global:
-    - REGISTRY_USER=ocadotechnology
-    # REGISTRY_PASS=...
-    - VERSION=$TRAVIS_TAG
-    - secret: "<something long>"
-
+  - REGISTRY_USER=ocadotechnologygitlab
+  - VERSION=$TRAVIS_TAG
+  - VCS_SOURCE="https://github.com/${TRAVIS_REPO_SLUG}"
+  - secure: LCpnt+cUo6FXqCF77YF94xJZK1+P5cX/lPaCfvcQcB50Vf+/lqnuBv9fGlcxootlRlTnSC3gukszLR5nLMNdSJMqfDvbmbeUIg6bNKqWXc0BWoV+DjH5hhinrsu//T914Bs4VgQjtC0GHtVXoNzuB87C1SiFTtV0OXzpzlbtv59AXbP2fnH2OkPezXmJS+PhIzIttptUl07Z4bkaxcvW/hKuTtrUS2XtYgOQCD4biOdNLHmnvNE2byS3Bl3MBh8FQJq3ZCZMCOwVMH3ENNTXnlrWLg9dHSeFXVzVDoIS/jOhIRHCzqKOLj+zZcxVvf9cm/p+nntmK41AfiimFcQ6/1Bg9svTHsXS4GFwLIwmxs1LH4QZxpbSMln59bkCOjCuq6hzyfQsrk4knVWShYJUcLeKVUf69kTfD16l24NjaWXXc1Lrw2rxD2J6n2yIpBLoUkyrnGQLIqBWxBTqBe23zM19DJOyvsGRstEgQPWMLJGZ3dsb7RTBSuMJq4uZlb+YRRrYAPgk5Oq/DGMuFJapXe7DwEYoAhmBR8DqcDlSO+zl1K7KA7Khpx9PuPGiqOvRo+gyH+nsR2XyKvNEz3sbuA6t33/k7FJ2G5JcsHfFDZ4WmbVaCdWKz6zw8GdAHQSBUNmWG2htoI7KZs6WtuYU4i5ZMYJSdDCsoOkEKM0moOs=
 before_script:
-  - docker pull "$TRAVIS_REPO_SLUG" || true
+- docker pull "$TRAVIS_REPO_SLUG" || true
 script:
-  - |
-    if [ -n "${TRAVIS_TAG}" ]; then
-      VERSION=$TRAVIS_COMMIT
-    fi
-  - |
-    docker build --pull --cache-from "$IMAGE_NAME" --tag "$IMAGE_NAME" \
-    --label="org.label-schema.build-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-    --label="org.label-schema.vendor=Ocado Technology" \
-    --label="org.label-schema.schema-version=1.0" \
-    --label="org.label-schema.vcs-url=${VCS_SOURCE}" \
-    --label="org.label-schema.version=${VERSION}" \
-    --label="org.label-schema.vcs-ref=${TRAVIS_COMMIT}" \
-    --label="org.opencontainers.image.created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-    --label="org.opencontainers.image.vendor=Ocado Technology" \
-    --label="org.opencontainers.image.source=${VCS_SOURCE}" \
-    --label="org.opencontainers.image.version=${VERSION}" \
-    --label="org.opencontainers.image.revision=${TRAVIS_COMMIT}" \
-    --label="org.opencontainers.image.authors=$(git log --format='%aE' Dockerfile | sort -u | tr '\n' ' ')" \
+- |
+  if [ -n "${TRAVIS_TAG}" ]; then
+    VERSION=$TRAVIS_COMMIT
+  fi
+- |
+  docker build --pull --cache-from "$TRAVIS_REPO_SLUG" --tag "$TRAVIS_REPO_SLUG" \
+  --label="org.label-schema.build-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --label="org.label-schema.vendor=Ocado Technology" \
+  --label="org.label-schema.schema-version=1.0" \
+  --label="org.label-schema.vcs-url=${VCS_SOURCE}" \
+  --label="org.label-schema.version=${VERSION}" \
+  --label="org.label-schema.vcs-ref=${TRAVIS_COMMIT}" \
+  --label="org.opencontainers.image.created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --label="org.opencontainers.image.vendor=Ocado Technology" \
+  --label="org.opencontainers.image.source=${VCS_SOURCE}" \
+  --label="org.opencontainers.image.version=${VERSION}" \
+  --label="org.opencontainers.image.revision=${TRAVIS_COMMIT}" \
+  --label="org.opencontainers.image.authors=$(git log --format='%aE' Dockerfile | sort -u | tr '\n' ' ')" \
   .
-  - python setup.py test
-
+- python setup.py test
 after_script:
-  - docker images
-
+- docker images
 before_deploy:
-  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
-  - docker tag "${$TRAVIS_REPO_SLUG}" "${TRAVIS_REPO_SLUG}:latest"
-  - docker tag "${$TRAVIS_REPO_SLUG}" "${$TRAVIS_REPO_SLUG}:${VERSION}"
+- docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
+- docker tag "${$TRAVIS_REPO_SLUG}" "${TRAVIS_REPO_SLUG}:latest"
+- docker tag "${$TRAVIS_REPO_SLUG}" "${$TRAVIS_REPO_SLUG}:${VERSION}"
 deploy:
   provider: script
   script: docker push "${$TRAVIS_REPO_SLUG}:latest" && docker push "${$TRAVIS_REPO_SLUG}:${TRAVIS_COMMIT}"
