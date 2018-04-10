@@ -265,7 +265,7 @@ spec:
           periodSeconds: 3
         # OPTIONAL: if you don't want any metrics you can rip out this container.
       - name: statsd
-        image: ocadotechnology/statsd:latest
+        image: ocadotechnology/statsd:0.8.0-1
         ports:
         - name: statsd
           containerPort: 8125
