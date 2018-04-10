@@ -43,8 +43,8 @@ before_deploy:
   fi
 - docker tag "${TRAVIS_REPO_SLUG}" "${TRAVIS_REPO_SLUG}:latest"
 - docker tag "${TRAVIS_REPO_SLUG}" "${TRAVIS_REPO_SLUG}:${TRAVIS_COMMIT}"
-- git checkout -- .
 deploy:
+  clean_up: false
   provider: script
   script:
   - |
