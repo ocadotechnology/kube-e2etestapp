@@ -14,9 +14,14 @@ LOGGER = logging.getLogger(__name__)
 
 
 class ApiMixin(object):
+    """
+    Class which loosely wraps around a kubernetes client object to standardise some useful methods/avoid recurringly
+    needing to update metrics and the frontend status page in multiple places.
+    """
     def __init__(self, namespace):
         self.namespace = namespace
         self.api = client.CoreV1Api()
+        # this will be filled with tuples containing (<error-msg>, <number-of-occurrences>
         self.errors = []
         self.on_api = False
         self.metric_data = {"resource": self.__class__.__name__,
@@ -99,6 +104,17 @@ class ApiMixin(object):
         return action_data
 
     def add_errors(self, errors):
+        """
+        Method which adds errors to the object's error list - this allows us to batch send them
+        when a status update is needed. It also does deduping of errors which have come up twice
+        since the last status was sent to the frontend.
+
+        Args:
+            errors: (list) list of tuples to add to the error list - first entry being the error, second being the number of occurences
+
+        Returns: None, as a side effect will update `self.errors`
+
+        """
         error_list = [error[0] for error in self.errors]
         for err in errors:
             try:
@@ -165,6 +181,18 @@ class ApiMixin(object):
             self.create(report)
 
     def wait_on_event(self, method, event_type_enum, count=1, args=()):
+        """
+        Wrapper around the watcher object which does exception handling and tracks errors waiting on object events to change
+
+        Args:
+            method: (method) kubernetes client method to wait on
+            event_type_enum: (EventType) enum from `helpers_and_globals` representing what object change to wait for
+            count: (int) number of events to wait on
+            args: (tuple) arguments which are needed by `method`
+
+        Returns: (list) list of objects which were modified, added or removed in the stream.
+
+        """
         event_type = event_type_enum.value
         resource = self.__class__.__name__
         watcher = watch.Watch()
@@ -189,6 +217,15 @@ class ApiMixin(object):
         return objects
 
     def send_update(self, name):
+        """
+        Method which will send an update on the current test to the flask frontend. If not running, will log it and carry on
+
+        Args:
+            name: (str) name of the test being ran
+
+        Returns: (Response) requests response from the action.
+
+        """
         namespace = os.environ.get("TEST_NAMESPACE", e2e_globals.TEST_NAMESPACE)
         passing, msgs = self.results
         event = e2e_globals.StatusEvent(name, passing, namespace, msgs)
