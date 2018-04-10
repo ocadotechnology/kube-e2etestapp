@@ -1,16 +1,18 @@
 import logging
 import requests
 
-from kubee2etests.apimixin import ApiMixin
-from kubee2etests import helpers_and_globals as e2e_globals
-from kubee2etests.helpers_and_globals import STATSD_CLIENT, ERROR_METRIC_NAME, HTTP_COUNT_METRIC_NAME, ACTION_METRIC_NAME
+from http import HTTPStatus
 from kubernetes import client, watch
 from kubernetes.client.rest import ApiException
 from urllib3.exceptions import MaxRetryError, ReadTimeoutError
-from http import HTTPStatus
+
+from kubee2etests.apimixin import ApiMixin
+from kubee2etests import helpers_and_globals as e2e_globals
+from kubee2etests.helpers_and_globals import STATSD_CLIENT, ACTION_METRIC_NAME
 
 
 LOGGER = logging.getLogger(__name__)
+
 
 class Service(ApiMixin):
     def __init__(self, service, subsets, addresses, namespace, **kwargs):

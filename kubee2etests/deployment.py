@@ -4,11 +4,10 @@ from kubernetes.client.rest import ApiException
 from urllib3.exceptions import MaxRetryError, ReadTimeoutError
 from http import HTTPStatus
 from kubee2etests import helpers_and_globals as e2e_globals
-from kubee2etests.helpers_and_globals import STATSD_CLIENT, ACTION_METRIC_NAME, ERROR_METRIC_NAME, HTTP_COUNT_METRIC_NAME
+from kubee2etests.helpers_and_globals import STATSD_CLIENT, ACTION_METRIC_NAME
 from kubee2etests.apimixin import ApiMixin
 import logging
 from kubee2etests import Pod
-import copy
 
 
 LOGGER = logging.getLogger(__name__)

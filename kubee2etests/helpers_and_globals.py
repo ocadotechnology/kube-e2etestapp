@@ -1,15 +1,16 @@
-import kubernetes
-import logging
 import ast
 import datetime
+import kubernetes
+import logging
+import os
+import sys
+
 
 from enum import Enum
 from statsd import StatsClient
+from kubernetes.config import ConfigException
 
 from kubee2etests import __version__
-from kubernetes.config import ConfigException
-import sys
-import os
 
 
 LOGGER = logging.getLogger(__name__)

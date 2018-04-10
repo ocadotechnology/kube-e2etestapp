@@ -1,8 +1,8 @@
-from kubernetes import client
-from kubernetes.client.rest import ApiException
 import logging
 
 from http import HTTPStatus
+from kubernetes import client
+from kubernetes.client.rest import ApiException
 from urllib3.exceptions import MaxRetryError
 
 from kubee2etests import helpers_and_globals as e2e_globals

@@ -3,7 +3,7 @@ from kubernetes import client
 from kubernetes.client.rest import ApiException
 from urllib3.exceptions import MaxRetryError
 from kubee2etests import helpers_and_globals as e2e_globals
-from kubee2etests.helpers_and_globals import STATSD_CLIENT, ERROR_METRIC_NAME, ACTION_METRIC_NAME
+from kubee2etests.helpers_and_globals import STATSD_CLIENT, ACTION_METRIC_NAME
 import logging
 from http import HTTPStatus
 

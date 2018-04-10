@@ -1,6 +1,7 @@
+import os
+
 from flask import Flask
 from kubee2etests.frontend.flask_app import healthcheck
-import os
 from kubee2etests.helpers_and_globals import FLASK_PORT
 
 
