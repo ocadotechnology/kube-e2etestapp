@@ -4,6 +4,23 @@ This application tests the features of Kubernetes periodically in order to colle
 
 Performance metrics are captured by each test using statsd to measure the effectiveness of the cluster and help highlight problems with it. See [Kubernetes Manifests](#kubernetes-manifests) for detail on how to deploy this. 
 
+# Contents
+
+  * [Configuration](#configuration)
+    + [Kubernetes manifests](#kubernetes-manifests)
+  * [Metrics and alerts](#metrics-and-alerts)
+    + [Time-based metrics](#time-based-metrics)
+    + [HTTP metrics](#http-metrics)
+    + [Error metrics](#error-metrics)
+  * [Health check dashboard](#health-check-dashboard)
+  * [Test List](#test-list)
+    + [Namespace tests](#namespace-tests)
+    + [Service tests](#service-tests)
+    + [Deployment tests](#deployment-tests)
+      - [Deployment update tests](#deployment-update-tests)
+      - [Deployment scaling tests](#deployment-scaling-tests)
+    + [HTTP request tests](#http-request-tests)
+    
 ## Configuration
 The following environment variables can be used to configure the e2etest container.
 
