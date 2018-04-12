@@ -4,6 +4,23 @@ This application tests the features of Kubernetes periodically in order to colle
 
 Performance metrics are captured by each test using statsd to measure the effectiveness of the cluster and help highlight problems with it. See [Kubernetes Manifests](#kubernetes-manifests) for detail on how to deploy this. 
 
+# Contents
+
+  * [Configuration](#configuration)
+    + [Kubernetes manifests](#kubernetes-manifests)
+  * [Metrics and alerts](#metrics-and-alerts)
+    + [Time-based metrics](#time-based-metrics)
+    + [HTTP metrics](#http-metrics)
+    + [Error metrics](#error-metrics)
+  * [Health check dashboard](#health-check-dashboard)
+  * [Test List](#test-list)
+    + [Namespace tests](#namespace-tests)
+    + [Service tests](#service-tests)
+    + [Deployment tests](#deployment-tests)
+      - [Deployment update tests](#deployment-update-tests)
+      - [Deployment scaling tests](#deployment-scaling-tests)
+    + [HTTP request tests](#http-request-tests)
+    
 ## Configuration
 The following environment variables can be used to configure the e2etest container.
 
@@ -25,6 +42,8 @@ Manifests required to run this app completely headless are in `./manifests`. In 
 
 - `./contrib/monitoring-config.yaml` contains configuration for monitoring. There are comments to indicate what each entry does.
 - `./contrib/frontend.yaml` contains configuration for running the frontend status dashboard. Optionally, it includes a certificate resource for use with `kube-cert-manager`. The ingress host name (and certificate domain) needs changing to match what you use on your cluster.
+
+It's recommended you download the releases zip and apply the manifests from there, rather than the repo directly, as the e2etest tag is set using semantic versioning git attributes.
 
 ## Metrics and alerts
 All metrics created by this application are prefixed by `e2etest.` and are measured using the Statsd client library. For more information on Statsd metric types please see the [statsd project repo](https://github.com/etsy/statsd). We use a Statsd -> Prometheus bridge when deploying this because:
