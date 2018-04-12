@@ -26,6 +26,8 @@ Manifests required to run this app completely headless are in `./manifests`. In 
 - `./contrib/monitoring-config.yaml` contains configuration for monitoring. There are comments to indicate what each entry does.
 - `./contrib/frontend.yaml` contains configuration for running the frontend status dashboard. Optionally, it includes a certificate resource for use with `kube-cert-manager`. The ingress host name (and certificate domain) needs changing to match what you use on your cluster.
 
+It's recommended you download the releases zip and apply the manifests from there, rather than the repo directly, as the e2etest tag is set using semantic versioning git attributes.
+
 ## Metrics and alerts
 All metrics created by this application are prefixed by `e2etest.` and are measured using the Statsd client library. For more information on Statsd metric types please see the [statsd project repo](https://github.com/etsy/statsd). We use a Statsd -> Prometheus bridge when deploying this because:
 
