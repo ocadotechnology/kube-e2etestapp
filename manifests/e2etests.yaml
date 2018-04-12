@@ -247,7 +247,7 @@ spec:
         - name: SECONDS_BETWEEN_RUNS
           value: "300"
         <<: &e2etests-image
-          image: ocadotechnology/kube-e2etestapp:latest
+          image: ocadotechnology/kube-e2etestapp:$Format:%H$
         ports:
         - name: flask
           containerPort: 8081

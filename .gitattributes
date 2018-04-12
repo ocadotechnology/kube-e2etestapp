@@ -1,1 +1,2 @@
-e2e/_version.py export-subst
+kubee2etests/_version.py export-subst
+manifests/e2etests.yaml export-subst
