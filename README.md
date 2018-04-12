@@ -84,7 +84,10 @@ The application provides a dashboard to quickly view the results of the last run
 
 This is intended to be a first port of call for identifying problems with the platform, supplemented by metrics from Prometheus, and has an ingress so you can view it at `status.<your domain here>`
 
-To enable this view you need the manifests in `contrib/frontend.yaml`
+To enable this view you need the manifests in `contrib/frontend.yaml` - example below
+
+![Healthcheck Dashboard](frontend.png)
+
 ## Test List
 ### Namespace tests
 1. create a namespace (name set by environment variable, or defaulted to kubee2etests)
