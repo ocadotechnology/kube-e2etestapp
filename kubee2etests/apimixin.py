@@ -8,7 +8,7 @@ from urllib3.exceptions import ReadTimeoutError
 import copy
 import time
 from kubee2etests import helpers_and_globals as e2e_globals
-from kubee2etests.helpers_and_globals import STATSD_CLIENT, ERROR_METRIC_NAME, HTTP_COUNT_METRIC_NAME, DNS_COUNT_METRIC_NAME
+from kubee2etests.helpers_and_globals import STATSD_CLIENT, ERROR_METRIC_NAME, HTTP_COUNT_METRIC_NAME
 
 LOGGER = logging.getLogger(__name__)
 
