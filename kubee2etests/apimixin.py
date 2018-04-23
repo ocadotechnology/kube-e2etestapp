@@ -8,10 +8,9 @@ from urllib3.exceptions import ReadTimeoutError
 import copy
 import time
 from kubee2etests import helpers_and_globals as e2e_globals
-from kubee2etests.helpers_and_globals import STATSD_CLIENT, ERROR_METRIC_NAME, HTTP_COUNT_METRIC_NAME
+from kubee2etests.helpers_and_globals import STATSD_CLIENT, ERROR_METRIC_NAME, HTTP_COUNT_METRIC_NAME, DNS_COUNT_METRIC_NAME
 
 LOGGER = logging.getLogger(__name__)
-
 
 class ApiMixin(object):
     """
@@ -83,6 +82,19 @@ class ApiMixin(object):
         if resource is not None:
             result_data["resource"] = resource
         STATSD_CLIENT.incr(HTTP_COUNT_METRIC_NAME % result_data)
+
+    def incr_dns_count_metric(self, result):
+        """
+        Helper method which increments the dns request count metric.
+
+        Args:
+            result: string of what happened - dnsok, nxdomain etc
+
+        Returns: None, increments the statsd dns count metric
+
+        """
+        result_data = {"result": result}
+        STATSD_CLIENT.incr(DNS_COUNT_METRIC_NAME % result_data)
 
     def action_data(self, action, resource=None):
         """

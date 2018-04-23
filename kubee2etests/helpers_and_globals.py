@@ -25,6 +25,7 @@ SECONDS_BETWEEN_RUNS = '0.0'
 ACTION_METRIC_NAME = "action.%(namespace)s.%(resource)s.%(action)s"
 ERROR_METRIC_NAME = "error.%(namespace)s.%(resource)s.%(area)s.%(error)s"
 HTTP_COUNT_METRIC_NAME = "http.%(namespace)s.%(resource)s.%(result)s"
+DNS_COUNT_METRIC_NAME = "dns.%(result)s"
 
 TEST_USER_AGENT = "e2etestapp-bot/" + __version__
 TEST_REQUEST_HEADERS = {'User-Agent': TEST_USER_AGENT}
@@ -33,6 +34,7 @@ TEST_REQUEST_HEADERS = {'User-Agent': TEST_USER_AGENT}
 TEST_NAMESPACE = "kubee2etests"
 TEST_SERVICE = "kubee2etests"
 TEST_DEPLOYMENT = "e2etestapp"
+TEST_DNS_QUERY_NAME = "kubernetes.default.svc.cluster.local"
 
 # image from which to base the container, html string for index pages
 NGINX_IMAGE = "nginx:alpine@sha256:aa0daf2b17c370a1da371a767110a43b390a9db90b90d2d1b07862dc81754d61"

@@ -1,8 +1,13 @@
+import dns.resolver
+import logging
 from kubee2etests.runners.service_runners import ServiceWithDeploymentRunner
 from kubee2etests import ConfigMap
+from kubee2etests.apimixin import ApiMixin
+from kubee2etests import helpers_and_globals as e2e_globals
 from kubee2etests.helpers_and_globals import TEST_DEPLOYMENT_INDEX, TEST_DEPLOYMENT_INDEX_CHANGED, \
-    TEST_REPLICAS, TEST_INDEX_NAME_CHANGED
+    TEST_REPLICAS, TEST_INDEX_NAME_CHANGED, TEST_DNS_QUERY_NAME
 
+LOGGER = logging.getLogger(__name__)
 
 class HttpRequestRunner(ServiceWithDeploymentRunner):
     def __init__(self, **kwargs):
@@ -36,3 +41,24 @@ class PostUpdateHttpRequestRunner(ServiceWithDeploymentRunner):
 
     def finish(self):
         self.deployment.change_cfg_map(self.cfgmap.name, report=False)
+
+
+class DNSRequestRunner(ApiMixin):
+    """docstring for DNSRequestRunner"""
+    def __init__(self, namespace=e2e_globals.TEST_NAMESPACE, service=e2e_globals.TEST_SERVICE, deployment=e2e_globals.TEST_DEPLOYMENT):
+        super().__init__(namespace=namespace)
+        self.qname = TEST_DNS_QUERY_NAME
+
+    def exec(self):
+        try:
+            dns.resolver.query(self.qname)
+            result="healthy"
+            LOGGER.info("DNS healthy")
+        except Exception as ex:
+            result=type(ex).__name__.lower()
+            LOGGER.error("Querying %s failed. %s", self.qname, ex)
+            self.add_error(ex)
+        self.incr_dns_count_metric(result)
+        
+
+        

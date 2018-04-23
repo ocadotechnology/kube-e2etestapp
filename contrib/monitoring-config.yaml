@@ -41,6 +41,10 @@ data:
     test="$1"
     resource="$2"
     result="$3"
+
+    e2etest.dns.*
+    name="e2etest_dns_requests_total"
+    result="$1"
 ---
 # OPTIONAL: this defines that the statsd service will repeat onto the prometheus exporter.
 apiVersion: v1
