@@ -83,19 +83,6 @@ class ApiMixin(object):
             result_data["resource"] = resource
         STATSD_CLIENT.incr(HTTP_COUNT_METRIC_NAME % result_data)
 
-    def incr_dns_count_metric(self, result):
-        """
-        Helper method which increments the dns request count metric.
-
-        Args:
-            result: string of what happened - dnsok, nxdomain etc
-
-        Returns: None, increments the statsd dns count metric
-
-        """
-        result_data = {"result": result}
-        STATSD_CLIENT.incr(DNS_COUNT_METRIC_NAME % result_data)
-
     def action_data(self, action, resource=None):
         """
         Helper method to get the data about the action happening. Mostly,

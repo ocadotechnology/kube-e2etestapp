@@ -2,10 +2,9 @@ import dns.resolver
 import logging
 from kubee2etests.runners.service_runners import ServiceWithDeploymentRunner
 from kubee2etests import ConfigMap
-from kubee2etests.apimixin import ApiMixin
 from kubee2etests import helpers_and_globals as e2e_globals
-from kubee2etests.helpers_and_globals import TEST_DEPLOYMENT_INDEX, TEST_DEPLOYMENT_INDEX_CHANGED, \
-    TEST_REPLICAS, TEST_INDEX_NAME_CHANGED, TEST_DNS_QUERY_NAME
+from kubee2etests.helpers_and_globals import STATSD_CLIENT, TEST_DEPLOYMENT_INDEX, TEST_DEPLOYMENT_INDEX_CHANGED, \
+    TEST_REPLICAS, TEST_INDEX_NAME_CHANGED, TEST_DNS_QUERY_NAME, DNS_COUNT_METRIC_NAME
 
 LOGGER = logging.getLogger(__name__)
 
@@ -43,11 +42,28 @@ class PostUpdateHttpRequestRunner(ServiceWithDeploymentRunner):
         self.deployment.change_cfg_map(self.cfgmap.name, report=False)
 
 
-class DNSRequestRunner(ApiMixin):
-    """docstring for DNSRequestRunner"""
-    def __init__(self, namespace=e2e_globals.TEST_NAMESPACE, service=e2e_globals.TEST_SERVICE, deployment=e2e_globals.TEST_DEPLOYMENT):
-        super().__init__(namespace=namespace)
+class DNSRequestRunner():
+    def __init__(self,namespace,service,deployment):
+        super().__init__()
         self.qname = TEST_DNS_QUERY_NAME
+
+    def add_error(self, err):
+        error_list = [error[0] for error in self.errors]
+        try:
+            idx = error_list.index(err)
+            self.errors[idx] = (err, self.errors[idx][1] + 1)
+        except ValueError:
+            self.errors.append((err, 1))
+
+    def incr_dns_count_metric(self,result):
+        """
+        Helper method which increments the dns request count metric.
+        Args:
+            result: string of what happened - healthy, nxdomain etc
+        Returns: None, increments the statsd dns count metric
+        """
+        result_data = {"result": result}
+        STATSD_CLIENT.incr(DNS_COUNT_METRIC_NAME % result_data)
 
     def exec(self):
         try:
