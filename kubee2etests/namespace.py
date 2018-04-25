@@ -3,7 +3,7 @@ from kubernetes import client
 from kubernetes.client.rest import ApiException
 from urllib3.exceptions import MaxRetryError
 from kubee2etests import helpers_and_globals as e2e_globals
-from kubee2etests.helpers_and_globals import STATSD_CLIENT, ACTION_METRIC_NAME, add_error, send_update
+from kubee2etests.helpers_and_globals import STATSD_CLIENT, ACTION_METRIC_NAME
 import logging
 from http import HTTPStatus
 
@@ -29,12 +29,12 @@ class Namespace(ApiMixin):
                 error_code, error_dict = self.parse_error(e.body)
                 LOGGER.error(error_dict['message'])
                 self.incr_error_metric(error_code.name.lower())
-                add_error(self,error_dict['message'])
+                self.add_error(error_dict['message'])
 
             except MaxRetryError:
                 LOGGER.error("Maximum number of retries exceeded")
                 self.incr_error_metric("max_retries_exceeded")
-                add_error(self,"max retries exceeded")
+                self.add_error("max retries exceeded")
 
             else:
                 self.wait_on_event(self.api.list_namespace, e2e_globals.EventType.ADDED)
@@ -61,7 +61,7 @@ class Namespace(ApiMixin):
             msg = "Maximum number of retries exceeded when reading %s"
             LOGGER.error(msg, resource_name)
             self.incr_error_metric("max_retries_exceeded")
-            add_error(self,(msg % resource_name))
+            self.add_error(msg % resource_name)
 
         log_msg = "Namespace %s contains %s %s"
         result_msg = ""
@@ -75,13 +75,13 @@ class Namespace(ApiMixin):
         if not empty:
             LOGGER.error("Namespace %s is not empty", self.name)
             self.incr_error_metric("not_empty", area="k8s")
-            add_error(self,result_msg)
+            self.add_error(result_msg)
 
         else:
             LOGGER.info("Namespace %s is empty", self.name)
 
         if report:
-            send_update(self,"Check namespace empty")
+            self.send_update("Check namespace empty")
 
         return empty
 
@@ -97,12 +97,12 @@ class Namespace(ApiMixin):
                 LOGGER.debug(error_code)
                 LOGGER.debug(error_dict)
                 self.incr_error_metric(error_code.name.lower())
-                add_error(self,error_dict['message'])
+                self.add_error(error_dict['message'])
 
             except MaxRetryError:
                 self.incr_error_metric("api", "max_retries_exceeded")
                 LOGGER.error("Max retries exceeded when deleting a namespace")
-                add_error(self,"max retries exceeded")
+                self.add_error("max retries exceeded")
 
             else:
                 self.wait_on_event(self.api.list_namespace, e2e_globals.EventType.DELETED)
@@ -122,22 +122,22 @@ class Namespace(ApiMixin):
             if error_code == HTTPStatus.NOT_FOUND:
                 if should_exist:
                     LOGGER.error("Namespace %s not created", self.name)
-                    add_error(self,"Namespace not created")
+                    self.add_error("Namespace not created")
                 self.on_api = False
             else:
-                add_error(self,error_dict['message'])
+                self.add_error(error_dict['message'])
             LOGGER.debug("Error code: %s error dict: %s", error_code, error_dict)
             self.incr_error_metric(error_code.name.lower())
 
         except MaxRetryError:
             LOGGER.error("Maximum number of retries exceeded")
             self.incr_error_metric("api", "max_retries_exceeded")
-            add_error(self,"max retries exceeded")
+            self.add_error("max retries exceeded")
 
         else:
             if not should_exist:
                 msg = "Namespace %s still exists"
                 parameters = self.name
                 LOGGER.error(msg, parameters)
-                add_error(self,(msg % parameters))
+                self.add_error(msg % parameters)
                 self.incr_error_metric("not_deleted", area="k8s")

@@ -1,6 +1,7 @@
 import dns.resolver
 import logging
 from kubee2etests.runners.service_runners import ServiceWithDeploymentRunner
+from kubee2etests.statussender import StatusSender
 from kubee2etests import ConfigMap
 from kubee2etests import helpers_and_globals as e2e_globals
 from kubee2etests.helpers_and_globals import STATSD_CLIENT, TEST_DEPLOYMENT_INDEX, TEST_DEPLOYMENT_INDEX_CHANGED, \
@@ -42,7 +43,7 @@ class PostUpdateHttpRequestRunner(ServiceWithDeploymentRunner):
         self.deployment.change_cfg_map(self.cfgmap.name, report=False)
 
 
-class DNSRequestRunner():
+class DNSRequestRunner(StatusSender):
     def __init__(self,namespace,service,deployment):
         super().__init__()
         self.qname = TEST_DNS_QUERY_NAME
@@ -66,11 +67,12 @@ class DNSRequestRunner():
         except Exception as ex:
             result=type(ex).__name__.lower()
             LOGGER.error("Querying %s failed. %s", self.qname, ex)
-            e2e_globals.add_error(self,ex)
+            self.add_error(ex)
             msg=ex
         self.incr_dns_count_metric(result)
         if report:
-            send_update(self,msg)       
+            self.send_update(msg)
 
     def exec(self):
-        self.run(self,report=True)
+        self.run(report=True)
+        

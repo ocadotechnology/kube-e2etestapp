@@ -4,8 +4,9 @@ from http import HTTPStatus
 from kubernetes import client
 from kubernetes.client.rest import ApiException
 from urllib3.exceptions import MaxRetryError
+
 from kubee2etests import helpers_and_globals as e2e_globals
-from kubee2etests.helpers_and_globals import STATSD_CLIENT, add_error
+from kubee2etests.helpers_and_globals import STATSD_CLIENT
 from kubee2etests.apimixin import ApiMixin
 
 
@@ -46,7 +47,7 @@ class PersistentVolumeClaim(ApiMixin):
                 error_code, error_dict = self.parse_error(e.body)
                 LOGGER.error(msg, self.name, error_code.name.lower(), error_dict['message'])
                 self.incr_error_metric(error_code.name.lower())
-                add_error(self,error_dict['message'])
+                self.add_error(error_dict['message'])
 
             else:
                 self.wait_on_event(self.api.list_namespaced_persistent_volume_claim, e2e_globals.EventType.ADDED,
@@ -64,7 +65,7 @@ class PersistentVolumeClaim(ApiMixin):
                 error_code, error_dict = self.parse_error(e.body)
                 LOGGER.error("Error deleting volume claim %s, API exception: %s msg: %s",
                              self.name, error_code.name.lower(), error_dict['message'])
-                add_error(self,error_dict['message'])
+                self.add_error(error_dict['message'])
                 self.incr_error_metric(error_code.name.lower())
 
             else:
@@ -84,22 +85,22 @@ class PersistentVolumeClaim(ApiMixin):
                 if should_exist:
                     LOGGER.error("vol claim %s not in namespace %s",
                                  *params)
-                    add_error(self,"vol claim not found")
+                    self.add_error("vol claim not found")
                     self.incr_error_metric(error_code.name.lower())
                 self.on_api = False
             else:
                 LOGGER.error("ApiException reading vol claim %s - %s; msg: %s",
                              self.name, error_code.name.lower(), error_dict['message'])
-                add_error(self,error_dict['message'])
+                self.add_error(error_dict['message'])
                 self.incr_error_metric(error_code.name.lower())
 
         except MaxRetryError:
             LOGGER.error("MaxRetryError reading vol claim %s", self.name)
-            add_error(self,"MaxRetryError")
+            self.add_error("MaxRetryError")
             self.incr_error_metric("max_retries_exceeded")
 
         else:
             if not should_exist:
                 LOGGER.error("vol claim %s still in namespace %s", self.name, self.namespace)
-                add_error(self,"vol claim still exists")
+                self.add_error("vol claim still exists")
                 self.incr_error_metric("not_deleted", area="k8s")

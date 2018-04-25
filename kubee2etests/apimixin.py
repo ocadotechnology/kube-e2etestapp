@@ -3,36 +3,29 @@ import json
 import requests
 import os
 import logging
+import time
 from http import HTTPStatus
 from urllib3.exceptions import ReadTimeoutError
-import copy
-import time
+from kubee2etests.statussender import StatusSender
 from kubee2etests import helpers_and_globals as e2e_globals
-from kubee2etests.helpers_and_globals import STATSD_CLIENT, ERROR_METRIC_NAME, HTTP_COUNT_METRIC_NAME, send_update, add_error
+from kubee2etests.helpers_and_globals import STATSD_CLIENT, ERROR_METRIC_NAME, HTTP_COUNT_METRIC_NAME
 
 LOGGER = logging.getLogger(__name__)
 
-class ApiMixin(object):
+class ApiMixin(StatusSender):
     """
     Class which loosely wraps around a kubernetes client object to standardise some useful methods/avoid recurringly
     needing to update metrics and the frontend status page in multiple places.
     """
     def __init__(self, namespace):
+        super().__init__()
         self.namespace = namespace
         self.api = client.CoreV1Api()
         # this will be filled with tuples containing (<error-msg>, <number-of-occurrences>
-        self.errors = []
         self.on_api = False
         self.metric_data = {"resource": self.__class__.__name__,
                             "namespace": self.namespace
                             }
-
-    @property
-    def results(self):
-        passed = len(self.errors) == 0
-        error_msgs = copy.deepcopy(self.errors)
-        self.errors = []
-        return passed, error_msgs
 
     def incr_error_metric(self, error, area="api", resource=None):
         """
@@ -94,9 +87,6 @@ class ApiMixin(object):
             action_data["resource"] = resource
         return action_data
 
-    def flush_errors(self):
-        self.errors = []
-
     def parse_error(self, error_body):
         try:
             json_error = json.loads(error_body)
@@ -111,26 +101,26 @@ class ApiMixin(object):
     def exists(self, report=True):
         self._read_from_k8s()
         if report:
-            send_update(self,("Check %s exists" % self.__class__.__name__))
+            self.send_update("Check %s exists" % self.__class__.__name__)
         return self.on_api
 
     def deleted(self, report=True):
         self._read_from_k8s(should_exist=False)
         if report:
-            send_update(self,("Check %s deleted" % self.__class__.__name__))
+            self.send_update("Check %s deleted" % self.__class__.__name__)
         return not self.on_api
 
     def _read_from_k8s(self, should_exist=True):
         LOGGER.warning("WARNING: no read_from_k8s method for class %s" % self.__class__.__name__)
-        add_error(self,"No read method for k8s")
+        self.add_error("No read method for k8s")
 
     def create(self, report=True):
         if report:
-            send_update(self,("Create %s" % self.__class__.__name__))
+            self.send_update("Create %s" % self.__class__.__name__)
 
     def delete(self, report=True):
         if report:
-            send_update(self,("Delete %s" % self.__class__.__name__))
+            self.send_update("Delete %s" % self.__class__.__name__)
 
     def wait_on_deleted(self, report=False):
         """
@@ -182,7 +172,7 @@ class ApiMixin(object):
         except ReadTimeoutError as e:
             LOGGER.error("%s event list read timed out, could not track events", resource)
             self.incr_error_metric("events", area="timeout")
-            add_error(self,("%s event list stream timed out" % resource))
+            self.add_error("%s event list stream timed out" % resource)
             LOGGER.debug(e)
             LOGGER.debug(objects)
         return objects
