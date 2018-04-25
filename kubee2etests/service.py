@@ -5,10 +5,9 @@ from http import HTTPStatus
 from kubernetes import client, watch
 from kubernetes.client.rest import ApiException
 from urllib3.exceptions import MaxRetryError, ReadTimeoutError
-
 from kubee2etests.apimixin import ApiMixin
 from kubee2etests import helpers_and_globals as e2e_globals
-from kubee2etests.helpers_and_globals import STATSD_CLIENT, ACTION_METRIC_NAME
+from kubee2etests.helpers_and_globals import STATSD_CLIENT, ACTION_METRIC_NAME, add_error, send_update
 
 
 LOGGER = logging.getLogger(__name__)
@@ -46,18 +45,18 @@ class Service(ApiMixin):
             if error_code == HTTPStatus.NOT_FOUND:
                 if should_exist:
                     LOGGER.error(msg, *parameters)
-                    self.add_error(msg % parameters)
+                    add_error(self,(msg % parameters))
                     self.incr_error_metric(error_code.name.lower())
                 self.on_api = False
             else:
                 LOGGER.error(msg, *parameters)
-                self.add_error(msg % parameters)
+                add_error(self,(msg % parameters))
                 self.incr_error_metric(error_code.name.lower())
 
         except MaxRetryError:
             LOGGER.error("Max retries exceeded when trying check service exists")
             self.incr_error_metric("max_retries_exceeded")
-            self.add_error("max retries exceeded")
+            add_error(self,"max retries exceeded")
 
         else:
             if not should_exist:
@@ -79,13 +78,13 @@ class Service(ApiMixin):
                     LOGGER.error("Service %s already exists in namespace %s", self.name, self.namespace)
 
                 self.incr_error_metric(error_code.name.lower())
-                self.add_error(error_dict['message'])
+                add_error(self,error_dict['message'])
                 LOGGER.debug(error_dict)
 
             except MaxRetryError:
                 LOGGER.error("Max retries exceeded when trying to create service")
                 self.incr_error_metric("max_retries_exceeded")
-                self.add_error("Max retries exceeded")
+                add_error(self,"Max retries exceeded")
 
         super().create(report)
 
@@ -103,12 +102,12 @@ class Service(ApiMixin):
                 LOGGER.error("Error code: %s", error_code)
                 LOGGER.error("Error msg: %s", error_dict['message'])
                 LOGGER.debug("Error dict: %s", error_dict)
-                self.add_error(error_dict['message'])
+                add_error(self,error_dict['message'])
 
             except MaxRetryError:
                 LOGGER.error("Max retries exceeded when trying to delete service")
                 self.incr_error_metric("max_retries_exceeded")
-                self.add_error("max retries exceeded")
+                add_error(self,"max retries exceeded")
 
             else:
                 self.wait_on_deleted()
@@ -155,18 +154,18 @@ class Service(ApiMixin):
             LOGGER.error("Endpoint event list read timed out, could not track events")
             LOGGER.debug(e)
             self.incr_error_metric("waiting_on_endpoints", area="timeout")
-            self.add_error("Event list timed out")
+            add_error(self,"Event list timed out")
 
         LOGGER.info("Endpoint for service: %s containing %s subsets containing %s addresses found",
                     self.name, subsets, addresses)
         if subsets == self.subsets:
             if addresses != self.addresses:
-                self.add_error("Addresses doesn't match expected - found %i, not %i" %
-                                   (addresses, self.addresses))
+                add_error(self,("Addresses doesn't match expected - found %i, not %i" %
+                                   (addresses, self.addresses)))
                 self.incr_error_metric("incorrect_endpoint_count", area="k8s")
         else:
-            self.add_error("Subsets doesn't match expected - found %i, not %i" %
-                               (subsets, self.subsets))
+            add_error(self,("Subsets doesn't match expected - found %i, not %i" %
+                               (subsets, self.subsets)))
 
     def read_endpoints(self, report=True):
         subsets = 0
@@ -184,20 +183,20 @@ class Service(ApiMixin):
             LOGGER.error("Endpoint could not be read, code: %s msg: %s", error_code.name.lower(), error_dict['message'])
             LOGGER.debug(e)
             self.incr_error_metric(error_code.name.lower())
-            self.add_error("Endpoint read error: {}".format(error_dict['message']))
+            add_error(self,"Endpoint read error: {}".format(error_dict['message']))
 
         if subsets == self.subsets:
             if addresses != self.addresses:
-                self.add_error("Addresses doesn't match expected - found %i, not %i" %
-                                   (addresses, self.addresses))
+                add_error(self,("Addresses doesn't match expected - found %i, not %i" %
+                                   (addresses, self.addresses)))
         else:
-            self.add_error("Subsets doesn't match expected - found %i, not %i" %
-                               (subsets, self.subsets))
+            add_error(self,("Subsets doesn't match expected - found %i, not %i" %
+                               (subsets, self.subsets)))
             self.incr_error_metric("incorrect_endpoint_count", area="k8s")
 
         LOGGER.info("Endpoint with %i subsets and %i addresses found", subsets, addresses)
         if report:
-            self.send_update("Read service endpoints")
+            send_update(self,"Read service endpoints")
 
     def make_http_request(self, hostname=False):
         response = None
@@ -221,18 +220,18 @@ class Service(ApiMixin):
                 except requests.HTTPError as e:
                     LOGGER.error("Service %s at address: %s GET request failed: %s", self.name, address, e)
                     self.incr_http_count_metric(str(response.status_code))
-                    self.add_error("HTTP error code %i" % response.status_code)
+                    add_error(self,("HTTP error code %i" % response.status_code))
 
                 except requests.ConnectionError as e:
                     LOGGER.error("Service %s at address: %s GET request failed: %s", self.name, address, e)
                     self.incr_http_count_metric("connection_error")
-                    self.add_error("Service %s at address: %s gave connection error" % (self.name, address))
+                    add_error(self,("Service %s at address: %s gave connection error" % (self.name, address)))
 
             except ApiException as e:
                 error_code, error_dict = self.parse_error(e.body)
                 LOGGER.error("Error reading namespaced service in http service request test. Code: %s msg: %s",
                              error_code.name.lower(), error_dict['message'])
-                self.add_error(error_dict['message'])
+                add_error(self,error_dict['message'])
                 self.incr_error_metric(error_code.name.lower())
 
         return response
@@ -242,7 +241,7 @@ class Service(ApiMixin):
             response = self.make_http_request(hostname=hostname)
             if response is not None:
                 if response.text != expected_text:
-                    self.add_error("Response text did not match expected - request %i" % i)
+                    add_error(self,("Response text did not match expected - request %i" % i))
                     self.incr_http_count_metric("wrong_response")
 
         if report:
@@ -251,4 +250,4 @@ class Service(ApiMixin):
                 form = "hostname"
             else:
                 form = "ip"
-            self.send_update(msg % (form, n))
+            send_update(self,(msg % (form, n)))

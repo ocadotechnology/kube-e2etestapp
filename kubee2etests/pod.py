@@ -3,10 +3,9 @@ import requests
 
 from http import HTTPStatus
 from urllib3.exceptions import MaxRetryError
-
 from kubee2etests.apimixin import ApiMixin
 from kubee2etests import helpers_and_globals as e2e_globals
-from kubee2etests.helpers_and_globals import STATSD_CLIENT, ACTION_METRIC_NAME
+from kubee2etests.helpers_and_globals import STATSD_CLIENT, ACTION_METRIC_NAME, add_error
 from kubernetes.client.rest import ApiException
 
 
@@ -30,7 +29,7 @@ class Pod(ApiMixin):
             msg = "Reading pod log threw ApiException, code: %s msg: %s"
             parameters = error_code.name.lower(), error_dict['message']
             LOGGER.error(msg, *parameters)
-            self.add_error(msg % parameters)
+            add_error(self,(msg % parameters))
             self.incr_error_metric(error_code.name.lower())
         return loglines
 
@@ -58,7 +57,7 @@ class Pod(ApiMixin):
                 self.on_api = False
                 if should_exist:
                     LOGGER.error("Pod %s does not exist", self.name)
-                    self.add_error("Does not exist")
+                    add_error(self,"Does not exist")
                     self.incr_error_metric(error_code.name.lower())
                 else:
                     LOGGER.info("Pod %s deleted", self.name)
@@ -66,7 +65,7 @@ class Pod(ApiMixin):
                 msg = "Error reading pod %s, code: %s msg: %s"
                 parameters = self.name, error_code.name.lower(), error_dict['message']
                 LOGGER.error(msg, *parameters)
-                self.add_error(msg % parameters)
+                add_error(self,(msg % parameters))
                 self.incr_error_metric(error_code.name.lower())
 
         else:
@@ -75,14 +74,14 @@ class Pod(ApiMixin):
                 msg = "pod %s still exists, phase: %s"
                 parameters = self.name, self._k8s_object.status.phase
                 LOGGER.error(msg, *parameters)
-                self.add_error(msg % parameters)
+                add_error(self,(msg % parameters))
                 self.incr_error_metric("not_deleted", area="k8s")
 
     @property
     def data_center(self):
         data_centre = None
         if self.node is None:
-            self.add_error("Pod %s has no node" % self.name)
+            add_error(self,"Pod %s has no node" % self.name)
             return None
         try:
             node = self.api.read_node(self.node)
@@ -92,7 +91,7 @@ class Pod(ApiMixin):
                 parameters = self.node, self.name
                 LOGGER.error(msg, *parameters)
                 self.incr_error_metric("no_zone_label_on_node", area="k8s")
-                self.add_error(msg % parameters)
+                add_error(self,(msg % parameters))
 
         except ApiException as e:
             error_code, error_dict = self.parse_error(e.body)
@@ -101,12 +100,12 @@ class Pod(ApiMixin):
             LOGGER.error(msg, *parameters)
             LOGGER.error("Error msg: %s", error_dict['message'])
             self.incr_error_metric(error_code.name.lower())
-            self.add_error(msg % parameters)
+            add_error(self,(msg % parameters))
 
         except MaxRetryError:
             LOGGER.error("Max retries exceeded when trying to list nodes")
             self.incr_error_metric("max_retries_exceeded")
-            self.add_error("max retries exceeded when trying to list nodes")
+            add_error(self,"max retries exceeded when trying to list nodes")
 
         return data_centre
 
@@ -125,11 +124,11 @@ class Pod(ApiMixin):
                 except requests.HTTPError as e:
                     LOGGER.error("Pod %s at address: %s GET request failed: %s", self.name, url, e)
                     self.incr_http_count_metric(str(response.status_code))
-                    self.add_error("HTTP error code %i" % response.status_code)
+                    add_error(self,"HTTP error code %i" % response.status_code)
 
                 except requests.ConnectionError as e:
                     LOGGER.error("Pod %s at address: %s GET request failed: %s", self.name, url, e)
                     self.incr_http_count_metric("connection_error")
-                    self.add_error("Pod %s at address: %s gave connection error" % (self.name, url))
+                    add_error(self,"Pod %s at address: %s gave connection error" % (self.name, url))
 
             return response

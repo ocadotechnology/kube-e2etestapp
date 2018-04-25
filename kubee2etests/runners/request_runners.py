@@ -47,14 +47,6 @@ class DNSRequestRunner():
         super().__init__()
         self.qname = TEST_DNS_QUERY_NAME
 
-    def add_error(self, err):
-        error_list = [error[0] for error in self.errors]
-        try:
-            idx = error_list.index(err)
-            self.errors[idx] = (err, self.errors[idx][1] + 1)
-        except ValueError:
-            self.errors.append((err, 1))
-
     def incr_dns_count_metric(self,result):
         """
         Helper method which increments the dns request count metric.
@@ -65,16 +57,20 @@ class DNSRequestRunner():
         result_data = {"result": result}
         STATSD_CLIENT.incr(DNS_COUNT_METRIC_NAME % result_data)
 
-    def exec(self):
+    def run(self,report=True):
         try:
             dns.resolver.query(self.qname)
             result="healthy"
-            LOGGER.info("DNS healthy")
+            msg="DNS healthy"
+            LOGGER.info(msg)
         except Exception as ex:
             result=type(ex).__name__.lower()
             LOGGER.error("Querying %s failed. %s", self.qname, ex)
-            self.add_error(ex)
+            e2e_globals.add_error(self,ex)
+            msg=ex
         self.incr_dns_count_metric(result)
-        
+        if report:
+            send_update(self,msg)       
 
-        
+    def exec(self):
+        self.run(self,report=True)

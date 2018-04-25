@@ -4,7 +4,7 @@ from kubernetes.client.rest import ApiException
 from urllib3.exceptions import MaxRetryError, ReadTimeoutError
 from http import HTTPStatus
 from kubee2etests import helpers_and_globals as e2e_globals
-from kubee2etests.helpers_and_globals import STATSD_CLIENT, ACTION_METRIC_NAME
+from kubee2etests.helpers_and_globals import STATSD_CLIENT, ACTION_METRIC_NAME, add_error, add_errors, send_update
 from kubee2etests.apimixin import ApiMixin
 import logging
 from kubee2etests import Pod
@@ -105,7 +105,7 @@ class Deployment(ApiMixin):
             except ApiException as e:
                 error_code, error_dict = self.parse_error(e.body)
                 self.incr_error_metric(error_code.name.lower())
-                self.add_error(error_dict['message'])
+                add_error(self.error_dict['message'])
                 if error_code == HTTPStatus.CONFLICT:
                     LOGGER.warning("Deployment already exists, continuing")
                     LOGGER.debug("Error msg: %s", error_dict['message'])
@@ -115,7 +115,7 @@ class Deployment(ApiMixin):
 
             except MaxRetryError:
                 msg = "Error creating deployment %s, max retries exceeded"
-                self.add_error("max retries exceeded")
+                add_error(self,"max retries exceeded")
                 LOGGER.error(msg, self.name)
                 self.incr_error_metric("max_retries_exceeded")
 
@@ -136,17 +136,17 @@ class Deployment(ApiMixin):
             if error_code == HTTPStatus.NOT_FOUND:
                 if should_exist:
                     LOGGER.error("deployment %s not found in namespace %s", self.name,self.namespace)
-                    self.add_error("ERR %s: %s" % (error_code.name.lower(), error_dict['message']))
+                    add_error(self,("ERR %s: %s" % (error_code.name.lower(), error_dict['message'])))
                     self.incr_error_metric(error_code.name.lower())
                 self.on_api = False
             else:
-                self.add_error("ERR %s: %s" % (error_code.name.lower(), error_dict['message']))
+                add_error(self,("ERR %s: %s" % (error_code.name.lower(), error_dict['message'])))
                 self.incr_error_metric(error_code.name.lower())
             LOGGER.debug("Error code: %s", error_code)
             LOGGER.debug("Error message: %s", error_dict['message'])
 
         except MaxRetryError:
-            self.add_error("max retries exceeded reading deployment %s" % self.name)
+            add_error(self,("max retries exceeded reading deployment %s" % self.name))
             LOGGER.error("Error reading deployment %s, max retries exceeded", self.name)
             self.incr_error_metric("max_retries_exceeded")
 
@@ -155,7 +155,7 @@ class Deployment(ApiMixin):
                 msg = "deployment %s still in namespace %s"
                 parameters = self.name, self.namespace
                 LOGGER.error(msg, *parameters)
-                self.add_error(msg % parameters)
+                add_error(self,(msg % parameters))
                 LOGGER.debug(created_deployment)
                 self.incr_error_metric("not_deleted", area="k8s")
 
@@ -164,14 +164,14 @@ class Deployment(ApiMixin):
             self.cfgmap_name = new_cfgmap_name
             self._update_k8s()
         if report:
-            self.send_update("Update deployment")
+            send_update(self,"Update deployment")
 
     def scale(self, replicas, report=True):
         with STATSD_CLIENT.timer(ACTION_METRIC_NAME % self.action_data("scale")):
             self.replicas = replicas
             self._update_k8s()
         if report:
-            self.send_update("Scale deployment to %i replicas" % replicas)
+            send_update(self,("Scale deployment to %i replicas" % replicas))
 
     def _update_k8s(self):
         try:
@@ -182,7 +182,7 @@ class Deployment(ApiMixin):
         except ApiException as e:
             error_code, error_dict = self.parse_error(e.body)
             msg = "Error updating deployment %s, code: %s msg: %s"
-            self.add_error(msg % (self.name, error_code.name.lower(), error_dict['message']))
+            add_error(self,(msg % (self.name, error_code.name.lower(), error_dict['message'])))
             LOGGER.error("Error updating deployment %s", self.name)
             LOGGER.error("Code: %s msg: %s", error_code, error_dict['message'])
             LOGGER.debug("Error dict: %s", error_dict)
@@ -190,7 +190,7 @@ class Deployment(ApiMixin):
 
         except MaxRetryError:
             msg = "Error updating deployment %s, max retries exceeded"
-            self.add_error(msg % self.name)
+            add_error(self,(msg % self.name))
             LOGGER.error(msg, self.name)
             self.incr_error_metric("max_retries_exceeded")
 
@@ -204,14 +204,14 @@ class Deployment(ApiMixin):
                 error_code, error_dict = self.parse_error(e.body)
                 msg = "Delete deployment %s from namespace %s failed, code: %s, msg: %s"
                 parameters = self.name, self.namespace, error_code.name.lower(), error_dict['message']
-                self.add_error(msg % parameters)
+                add_error(self,(msg % parameters))
                 LOGGER.error(msg, *parameters)
                 self.incr_error_metric(error_code.name.lower())
 
             except MaxRetryError:
                 msg = "Error deleting deployment %s from namespace %s, max retries exceeded"
                 parameters = self.name, self.namespace
-                self.add_error(msg % parameters)
+                add_error(self,(msg % parameters))
                 LOGGER.error(msg, *parameters)
                 self.incr_error_metric("max_retries_exceeded")
 
@@ -241,17 +241,17 @@ class Deployment(ApiMixin):
             error_code, error_dict = self.parse_error(e.body)
             LOGGER.error("Reading pods threw an ApiException: %s, msg: %s",
                          error_code.name.lower(), error_dict['message'])
-            self.add_error(error_dict['message'])
+            add_error(self,error_dict['message'])
             self.incr_error_metric(error_code.name.lower())
 
         except MaxRetryError as e:
             LOGGER.error("Reading pods threw a MaxRetryError: %s",
                          e.reason)
-            self.add_error(e.reason)
+            add_error(self,e.reason)
             self.incr_error_metric("max_retries_exceeded")
 
         if report:
-            self.send_update("Read pods")
+            send_update(self,"Read pods")
 
     def _wait_on_pods(self, phase="any", event_type_enum=e2e_globals.EventType.ALL):
         """
@@ -292,19 +292,19 @@ class Deployment(ApiMixin):
             self.incr_error_metric("waiting_on_phase", area="timeout")
             LOGGER.error("Pod event list read timed out, could not track pod scheduling")
             LOGGER.debug(e)
-            self.add_error("Pod event list timed out")
+            add_error(self,"Pod event list timed out")
 
     def wait_on_pods_ready(self, report=True):
         with STATSD_CLIENT.timer(ACTION_METRIC_NAME % self.action_data("run", resource="Pod")):
             self._wait_on_pods(phase="Running")
         if report:
-            self.send_update("Wait on pods ready")
+            send_update(self,"Wait on pods ready")
 
     def wait_on_pods_scheduled(self, report=True):
         with STATSD_CLIENT.timer(ACTION_METRIC_NAME % self.action_data("schedule", resource="Pod")):
             self._wait_on_pods(phase="Pending")
         if report:
-            self.send_update("Wait on pod scheduling")
+            send_update(self,"Wait on pod scheduling")
 
     def check_pods_deleted(self, phase="any", report=True):
         deleted = True
@@ -315,39 +315,39 @@ class Deployment(ApiMixin):
             to_delete_pods = self.pods[phase]
         for pod in to_delete_pods:
             deleted = deleted and pod.deleted()
-            self.add_errors(pod.results[1])
+            add_errors(self,pod.results[1])
         if report:
-            self.send_update("Check pods are deleted")
+            send_update(self,"Check pods are deleted")
 
     def watch_pod_scaling(self, report=True):
         with STATSD_CLIENT.timer(ACTION_METRIC_NAME % self.action_data("scale", resource="Pod")):
             self._wait_on_pods(event_type_enum=e2e_globals.EventType.DELETED)
         if report:
-            self.send_update("Watch pod deletion")
+            send_update(self,"Watch pod deletion")
 
     def check_pods_on_different_nodes(self, report=True):
         nodes = {}
         for pod in self.pods["Running"]:
             node = pod.node
-            self.add_errors(pod.results[1])
+            add_errors(self,pod.results[1])
             nodes.setdefault(node, []).append(pod.name)
 
         for node, pods in nodes.items():
             if len(pods) > 1:
                 msg = "Pods %s are on the same node - %s"
                 params = ",".join(nodes[node]), node
-                self.add_error(msg % params)
+                add_error(self,(msg % params))
                 LOGGER.error(msg, *params)
                 self.incr_error_metric("same_node", area="k8s", resource="Pod")
 
         if report:
-            self.send_update("Check pods on different nodes")
+            send_update(self,"Check pods on different nodes")
 
     def check_pods_on_different_data_centres(self, report=True):
         dcs = {}
         for pod in self.pods["Running"]:
             dc = pod.data_center
-            self.add_errors(pod.results[1])
+            add_errors(self,pod.results[1])
             if dc is not None:
                 dcs.setdefault(dc, []).append(pod.name)
 
@@ -355,12 +355,12 @@ class Deployment(ApiMixin):
             if len(pods) > 1:
                 msg = "Pods %s are in the same data centre - %s"
                 params = ",".join(dcs[dc]), dc
-                self.add_error(msg % params)
+                add_error(self,(msg % params))
                 LOGGER.error(msg, *params)
                 self.incr_error_metric("same_data_centre", area="k8s", resource="Pod")
 
         if report:
-            self.send_update("Check pods on different data centres")
+            send_update(self,"Check pods on different data centres")
 
     def http_request_all_pods(self, cfgmap_text, report=True):
         """
@@ -376,10 +376,10 @@ class Deployment(ApiMixin):
         """
         for pod in self.pods["Running"]:
             response = pod.make_http_request()
-            self.add_errors(pod.results[1])
+            add_errors(self,pod.results[1])
             if response is not None:
                 if response.text != cfgmap_text:
-                    self.add_error("Response text does not match expected text")
+                    add_error(self,"Response text does not match expected text")
                     msg = "Response from pod %s didn't match exp output"
                     parameters = pod.name
                     LOGGER.error(msg, *parameters)
@@ -390,7 +390,7 @@ class Deployment(ApiMixin):
 
         self.pod_requests += 1
         if report:
-            self.send_update("HTTP request each pod")
+            send_update(self,"HTTP request each pod")
 
     def validate_pod_log(self, service_requests=1, user_agent=e2e_globals.TEST_USER_AGENT, report=True):
         """
@@ -406,18 +406,18 @@ class Deployment(ApiMixin):
         total_lines = 0
         for pod in self.pods["Running"]:
             log = pod.log
-            self.add_errors(pod.results[1])
+            add_errors(self,pod.results[1])
             user_agent_lines = [line for line in log if not user_agent or user_agent in line]
             count = len(user_agent_lines)
             total_lines += count
             if count < self.pod_requests:
-                self.add_error("Not enough lines of output containing user agent to meet pod request count")
+                add_error(self,"Not enough lines of output containing user agent to meet pod request count")
                 break
 
         if not total_lines == service_requests + self.pod_requests * len(self.pods):
-            self.add_error("Not enough lines of output containing user agent to meet pod request count"
+            add_error(self,"Not enough lines of output containing user agent to meet pod request count"
                                " and service request count")
             self.incr_error_metric("log_incorrect", area="k8s", resource="Pod")
 
         if report:
-            self.send_update("Validate pod logs")
+            send_update(self,"Validate pod logs")

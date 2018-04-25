@@ -8,7 +8,7 @@ from kubernetes.client.rest import ApiException
 from http import HTTPStatus
 from urllib3.exceptions import MaxRetryError
 from kubee2etests import helpers_and_globals as e2e_globals
-from kubee2etests.helpers_and_globals import STATSD_CLIENT, ACTION_METRIC_NAME
+from kubee2etests.helpers_and_globals import STATSD_CLIENT, ACTION_METRIC_NAME, add_error
 from kubee2etests.apimixin import ApiMixin
 
 
@@ -40,7 +40,7 @@ class ConfigMap(ApiMixin):
             except ApiException as e:
                 error_code, error_dict = self.parse_error(e.body)
                 self.incr_error_metric(error_code.name.lower())
-                self.add_error(error_dict['message'])
+                add_error(self,error_dict['message'])
                 if error_code == HTTPStatus.CONFLICT:
                     LOGGER.warning("ConfigMap already created, continuing")
 
@@ -56,7 +56,7 @@ class ConfigMap(ApiMixin):
                 msg = "Error creating config map %s, max retries exceeded"
                 LOGGER.error(msg, self.name)
                 self.incr_error_metric("max_retries_exceeded")
-                self.add_error(msg % self.name)
+                add_error(self,msg % self.name)
 
             else:
                 self.wait_on_event(self.api.list_namespaced_config_map, e2e_globals.EventType.ADDED,
@@ -76,24 +76,24 @@ class ConfigMap(ApiMixin):
                 if should_exist:
                     LOGGER.error("Config map %s not in namespace %s",
                                  *params)
-                    self.add_error("Cfg map not found")
+                    add_error(self,"Cfg map not found")
                     self.incr_error_metric("not_found", area="k8s")
                 self.on_api = False
             else:
                 LOGGER.error("ApiException reading Cfg map %s - %s; msg: %s",
                              self.name, error_code.name.lower(), error_dict['message'])
-                self.add_error(error_dict['message'])
+                add_error(self,error_dict['message'])
                 self.incr_error_metric(error_code.name.lower())
 
         except MaxRetryError:
             LOGGER.error("MaxRetryError reading cfg map %s", self.name)
-            self.add_error("MaxRetryError")
+            add_error(self,"MaxRetryError")
             self.incr_error_metric("max_retries_exceeded")
 
         else:
             if not should_exist:
                 LOGGER.error("Cfgmap %s still in namespace %s", self.name, self.namespace)
-                self.add_error("Cfg map still exists")
+                add_error(self,"Cfg map still exists")
                 self.incr_error_metric("still_exists", area="k8s")
 
     def delete(self, report=True):
@@ -107,7 +107,7 @@ class ConfigMap(ApiMixin):
                 error_code, error_dict = self.parse_error(e.body)
                 parameters = self.name, error_code, error_dict['message']
                 LOGGER.error(msg, *parameters)
-                self.add_error(msg % parameters)
+                add_error(self,msg % parameters)
                 self.incr_error_metric(error_code.name.lower())
 
             else:

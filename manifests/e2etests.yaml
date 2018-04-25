@@ -171,30 +171,6 @@ spec:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kube-e2etests-dns
-  labels:
-    appId: kube
----
-apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: safety
-  namespace: kube-e2etests-dns
-spec:
-  hard:
-    cpu: "1"
-    memory: 1Gi
-    requests.storage: 50Gi
-    persistentvolumeclaims: "5"
-    configmaps: "5"
-    pods: "10"
-    replicationcontrollers: "5"
-    services: "5"
-    secrets: "5"
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: kube-e2etests-http
   labels:
     appId: kube
@@ -391,8 +367,6 @@ spec:
         env:
         - name: SECONDS_BETWEEN_RUNS
           value: "300"
-        - name: TEST_NAMESPACE
-          value: kube-e2etests-deployment-scale-service
       - name: dns
         <<: *e2etests-image
         command: ["python"]
@@ -702,44 +676,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
 metadata:
-  name: e2etests-dns
-  namespace: kube-e2etests-dns
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - services
-  - configmaps
-  verbs:
-  - get
-  - create
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - endpoints
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - list
-  - get
-  - watch
-  - read
-- apiGroups:
-  - extensions
-  resources:
-  - deployments
-  verbs:
-  - get
-  - create
----
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: Role
-metadata:
   name: e2etests-http
   namespace: kube-e2etests-http
 rules:
@@ -905,20 +841,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: e2etests-deployment-scale-service
-subjects:
-- kind: ServiceAccount
-  name: e2etests
-  namespace: default
----
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: RoleBinding
-metadata:
-  name: osp:e2etests-dns
-  namespace: kube-e2etests-dns
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: e2etests-dns
 subjects:
 - kind: ServiceAccount
   name: e2etests

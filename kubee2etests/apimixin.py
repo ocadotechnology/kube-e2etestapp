@@ -8,7 +8,7 @@ from urllib3.exceptions import ReadTimeoutError
 import copy
 import time
 from kubee2etests import helpers_and_globals as e2e_globals
-from kubee2etests.helpers_and_globals import STATSD_CLIENT, ERROR_METRIC_NAME, HTTP_COUNT_METRIC_NAME
+from kubee2etests.helpers_and_globals import STATSD_CLIENT, ERROR_METRIC_NAME, HTTP_COUNT_METRIC_NAME, send_update, add_error
 
 LOGGER = logging.getLogger(__name__)
 
@@ -33,14 +33,6 @@ class ApiMixin(object):
         error_msgs = copy.deepcopy(self.errors)
         self.errors = []
         return passed, error_msgs
-
-    def add_error(self, err):
-        error_list = [error[0] for error in self.errors]
-        try:
-            idx = error_list.index(err)
-            self.errors[idx] = (err, self.errors[idx][1] + 1)
-        except ValueError:
-            self.errors.append((err, 1))
 
     def incr_error_metric(self, error, area="api", resource=None):
         """
@@ -102,26 +94,6 @@ class ApiMixin(object):
             action_data["resource"] = resource
         return action_data
 
-    def add_errors(self, errors):
-        """
-        Method which adds errors to the object's error list - this allows us to batch send them
-        when a status update is needed. It also does deduping of errors which have come up twice
-        since the last status was sent to the frontend.
-
-        Args:
-            errors: (list) list of tuples to add to the error list - first entry being the error, second being the number of occurences
-
-        Returns: None, as a side effect will update `self.errors`
-
-        """
-        error_list = [error[0] for error in self.errors]
-        for err in errors:
-            try:
-                idx = error_list.index(err[0])
-                self.errors[idx] = (err, self.errors[idx][1] + err[1])
-            except ValueError:
-                self.errors.append(err)
-
     def flush_errors(self):
         self.errors = []
 
@@ -139,26 +111,26 @@ class ApiMixin(object):
     def exists(self, report=True):
         self._read_from_k8s()
         if report:
-            self.send_update("Check %s exists" % self.__class__.__name__)
+            send_update(self,("Check %s exists" % self.__class__.__name__))
         return self.on_api
 
     def deleted(self, report=True):
         self._read_from_k8s(should_exist=False)
         if report:
-            self.send_update("Check %s deleted" % self.__class__.__name__)
+            send_update(self,("Check %s deleted" % self.__class__.__name__))
         return not self.on_api
 
     def _read_from_k8s(self, should_exist=True):
         LOGGER.warning("WARNING: no read_from_k8s method for class %s" % self.__class__.__name__)
-        self.add_error("No read method for k8s")
+        add_error(self,"No read method for k8s")
 
     def create(self, report=True):
         if report:
-            self.send_update("Create %s" % self.__class__.__name__)
+            send_update(self,("Create %s" % self.__class__.__name__))
 
     def delete(self, report=True):
         if report:
-            self.send_update("Delete %s" % self.__class__.__name__)
+            send_update(self,("Delete %s" % self.__class__.__name__))
 
     def wait_on_deleted(self, report=False):
         """
@@ -210,27 +182,7 @@ class ApiMixin(object):
         except ReadTimeoutError as e:
             LOGGER.error("%s event list read timed out, could not track events", resource)
             self.incr_error_metric("events", area="timeout")
-            self.add_error("%s event list stream timed out" % resource)
+            add_error(self,("%s event list stream timed out" % resource))
             LOGGER.debug(e)
             LOGGER.debug(objects)
         return objects
-
-    def send_update(self, name):
-        """
-        Method which will send an update on the current test to the flask frontend. If not running, will log it and carry on
-
-        Args:
-            name: (str) name of the test being ran
-
-        Returns: (Response) requests response from the action.
-
-        """
-        namespace = os.environ.get("TEST_NAMESPACE", e2e_globals.TEST_NAMESPACE)
-        passing, msgs = self.results
-        event = e2e_globals.StatusEvent(name, passing, namespace, msgs)
-        try:
-            response = requests.post("http://localhost:{}/update".format(e2e_globals.FLASK_PORT), json=event.event_data)
-            return response
-        except Exception as e:
-            LOGGER.error("Flask endpoint not available, continuing")
-            LOGGER.debug("Exception: %s", str(e))
