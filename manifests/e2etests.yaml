@@ -367,6 +367,8 @@ spec:
         env:
         - name: SECONDS_BETWEEN_RUNS
           value: "300"
+        - name: TEST_NAMESPACE
+          value: kube-e2etests-deployment-scale-service
       - name: dns
         <<: *e2etests-image
         command: ["python"]
@@ -374,8 +376,6 @@ spec:
         env:
         - name: SECONDS_BETWEEN_RUNS
           value: "300"
-        - name: TEST_NAMESPACE
-          value: kube-e2etests-dns
       - name: http
         <<: *e2etests-image
         command: ["python"]
