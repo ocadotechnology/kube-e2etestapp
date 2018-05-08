@@ -1,11 +1,13 @@
 from kubee2etests.helpers_and_globals import load_kubernetes, TEST_DEPLOYMENT_INDEX
 from kubee2etests import Deployment, Namespace, ConfigMap, Service
 from kubee2etests.exceptions import PrerequisiteMissingException
+from kubee2etests.statussender import StatusSender
 from kubee2etests import helpers_and_globals as e2e_globals
 
 
-class RunnerBase(object):
+class RunnerBase(StatusSender):
     def __init__(self, namespace, **kwargs):
+        super().__init__()
         load_kubernetes()
         self.namespace = Namespace(namespace)
 

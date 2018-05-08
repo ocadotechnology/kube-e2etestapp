@@ -369,6 +369,13 @@ spec:
           value: "300"
         - name: TEST_NAMESPACE
           value: kube-e2etests-deployment-scale-service
+      - name: dns
+        <<: *e2etests-image
+        command: ["python"]
+        args: ["kubee2etests/scripts/test_runner.py", "dns"]
+        env:
+        - name: SECONDS_BETWEEN_RUNS
+          value: "300"
       - name: http
         <<: *e2etests-image
         command: ["python"]
@@ -754,6 +761,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: e2etests
+  namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
@@ -767,6 +775,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: e2etests
+  namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
@@ -780,6 +789,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: e2etests
+  namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
@@ -793,6 +803,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: e2etests
+  namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
@@ -819,6 +830,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: e2etests
+  namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
@@ -832,6 +844,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: e2etests
+  namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
@@ -845,6 +858,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: e2etests
+  namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
@@ -858,6 +872,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: e2etests
+  namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
@@ -871,6 +886,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: e2etests
+  namespace: default
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

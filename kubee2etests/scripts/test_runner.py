@@ -30,6 +30,7 @@ def main():
               "service": service_runners.ServiceRunner,
               "deployment_service": service_runners.ServiceWithDeploymentRunner,
               "deployment_scale_service": service_runners.ServiceWithScaledDeploymentRunner,
+              "dns": request_runners.DNSRequestRunner,
               "http": request_runners.HttpRequestRunner,
               "http_update": request_runners.PostUpdateHttpRequestRunner}
     namespace = os.environ.get("TEST_NAMESPACE", e2e_globals.TEST_NAMESPACE)

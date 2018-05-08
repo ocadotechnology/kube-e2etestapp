@@ -1,8 +1,13 @@
+import dns.resolver
+import logging
 from kubee2etests.runners.service_runners import ServiceWithDeploymentRunner
+from kubee2etests.statussender import StatusSender
 from kubee2etests import ConfigMap
-from kubee2etests.helpers_and_globals import TEST_DEPLOYMENT_INDEX, TEST_DEPLOYMENT_INDEX_CHANGED, \
-    TEST_REPLICAS, TEST_INDEX_NAME_CHANGED
+from kubee2etests import helpers_and_globals as e2e_globals
+from kubee2etests.helpers_and_globals import STATSD_CLIENT, TEST_DEPLOYMENT_INDEX, TEST_DEPLOYMENT_INDEX_CHANGED, \
+    TEST_REPLICAS, TEST_INDEX_NAME_CHANGED, TEST_DNS_QUERY_NAME, DNS_COUNT_METRIC_NAME
 
+LOGGER = logging.getLogger(__name__)
 
 class HttpRequestRunner(ServiceWithDeploymentRunner):
     def __init__(self, **kwargs):
@@ -36,3 +41,38 @@ class PostUpdateHttpRequestRunner(ServiceWithDeploymentRunner):
 
     def finish(self):
         self.deployment.change_cfg_map(self.cfgmap.name, report=False)
+
+
+class DNSRequestRunner(StatusSender):
+    def __init__(self,namespace,service,deployment):
+        super().__init__()
+        self.qname = TEST_DNS_QUERY_NAME
+
+    def incr_dns_count_metric(self,result):
+        """
+        Helper method which increments the dns request count metric.
+        Args:
+            result: string of what happened - healthy, nxdomain etc
+        Returns: None, increments the statsd dns count metric
+        """
+        result_data = {"result": result}
+        STATSD_CLIENT.incr(DNS_COUNT_METRIC_NAME % result_data)
+
+    def run(self,report=True):
+        try:
+            dns.resolver.query(self.qname)
+            result="healthy"
+            msg="DNS healthy"
+            LOGGER.info(msg)
+        except Exception as ex:
+            result=type(ex).__name__.lower()
+            LOGGER.error("Querying %s failed. %s", self.qname, ex)
+            self.add_error(ex)
+            msg=ex
+        self.incr_dns_count_metric(result)
+        if report:
+            self.send_update(msg)
+
+    def exec(self):
+        self.run(report=True)
+        

@@ -3,45 +3,29 @@ import json
 import requests
 import os
 import logging
+import time
 from http import HTTPStatus
 from urllib3.exceptions import ReadTimeoutError
-import copy
-import time
+from kubee2etests.statussender import StatusSender
 from kubee2etests import helpers_and_globals as e2e_globals
 from kubee2etests.helpers_and_globals import STATSD_CLIENT, ERROR_METRIC_NAME, HTTP_COUNT_METRIC_NAME
 
 LOGGER = logging.getLogger(__name__)
 
-
-class ApiMixin(object):
+class ApiMixin(StatusSender):
     """
     Class which loosely wraps around a kubernetes client object to standardise some useful methods/avoid recurringly
     needing to update metrics and the frontend status page in multiple places.
     """
     def __init__(self, namespace):
+        super().__init__()
         self.namespace = namespace
         self.api = client.CoreV1Api()
         # this will be filled with tuples containing (<error-msg>, <number-of-occurrences>
-        self.errors = []
         self.on_api = False
         self.metric_data = {"resource": self.__class__.__name__,
                             "namespace": self.namespace
                             }
-
-    @property
-    def results(self):
-        passed = len(self.errors) == 0
-        error_msgs = copy.deepcopy(self.errors)
-        self.errors = []
-        return passed, error_msgs
-
-    def add_error(self, err):
-        error_list = [error[0] for error in self.errors]
-        try:
-            idx = error_list.index(err)
-            self.errors[idx] = (err, self.errors[idx][1] + 1)
-        except ValueError:
-            self.errors.append((err, 1))
 
     def incr_error_metric(self, error, area="api", resource=None):
         """
@@ -102,29 +86,6 @@ class ApiMixin(object):
         if resource is not None:
             action_data["resource"] = resource
         return action_data
-
-    def add_errors(self, errors):
-        """
-        Method which adds errors to the object's error list - this allows us to batch send them
-        when a status update is needed. It also does deduping of errors which have come up twice
-        since the last status was sent to the frontend.
-
-        Args:
-            errors: (list) list of tuples to add to the error list - first entry being the error, second being the number of occurences
-
-        Returns: None, as a side effect will update `self.errors`
-
-        """
-        error_list = [error[0] for error in self.errors]
-        for err in errors:
-            try:
-                idx = error_list.index(err[0])
-                self.errors[idx] = (err, self.errors[idx][1] + err[1])
-            except ValueError:
-                self.errors.append(err)
-
-    def flush_errors(self):
-        self.errors = []
 
     def parse_error(self, error_body):
         try:
@@ -215,23 +176,3 @@ class ApiMixin(object):
             LOGGER.debug(e)
             LOGGER.debug(objects)
         return objects
-
-    def send_update(self, name):
-        """
-        Method which will send an update on the current test to the flask frontend. If not running, will log it and carry on
-
-        Args:
-            name: (str) name of the test being ran
-
-        Returns: (Response) requests response from the action.
-
-        """
-        namespace = os.environ.get("TEST_NAMESPACE", e2e_globals.TEST_NAMESPACE)
-        passing, msgs = self.results
-        event = e2e_globals.StatusEvent(name, passing, namespace, msgs)
-        try:
-            response = requests.post("http://localhost:{}/update".format(e2e_globals.FLASK_PORT), json=event.event_data)
-            return response
-        except Exception as e:
-            LOGGER.error("Flask endpoint not available, continuing")
-            LOGGER.debug("Exception: %s", str(e))
