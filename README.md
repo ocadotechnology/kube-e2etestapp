@@ -2,7 +2,7 @@
 
 This application tests the features of Kubernetes periodically in order to collect data and highlight symptoms of underlying issues.
 
-Performance metrics are captured by each test using statsd to measure the effectiveness of the cluster and help highlight problems with it. See [Kubernetes Manifests](#kubernetes-manifests) for detail on how to deploy this. 
+Performance metrics are captured by each test using statsd to measure the effectiveness of the cluster and help highlight problems with it. See [Kubernetes Manifests](#kubernetes-manifests) for detail on how to deploy this. [Contributing](./CONTRIBUTING.md) includes a diagram of how this works under the hood and how people can contribute to this project.
 
 # Contents
 
