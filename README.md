@@ -134,6 +134,9 @@ To enable this view you need the manifests in `contrib/frontend.yaml` - example 
 1. make http request to service address N*2 times after update, get expected responses
 
 
+### DNS test
+The DNS test attempts to resolve a well known name within the cluster from the test container itself - we added this because we found that DNS pods could be up but due to various issues DNS was not actually working at all.
+
 The main script, `kubee2etests/scripts/test_runner.py` runs a different selection of the above tests based on a command line argument `suite`. It can be ran locally using `python3 kubee2etests/scripts/test_runner.py <suite>` using any of the test names below.
 
 Test suite name | tasks
@@ -147,5 +150,7 @@ deployment_service | Create a service if it's not there, create a deployment if 
 deployment_scale_service | Create a service if it's not there, create a deployment if it's not there, scale the deployment, service endpoints correct tests
 http |Create a service if it's not there, create a deployment if it's not there,  HTTP request tests
 http_update | Create a service if it's not there, create a deployment if it's not there, deployment update tests, HTTP request tests
+dns | Attempt to resolve name, report healthy if passed, failed if failed.
 
-Excluding the namespace test, all namespaces assume the namespace defined in the environment variable `TEST_NAMESPACE` will not create their own namespaces - if the namespace does not exist, the test will quit.
+Excluding the DNS test (which has no namespace) and the namespace test, all tests assume the namespace defined in the environment variable `TEST_NAMESPACE` will exist when they start - if the namespace does not exist, the test will quit. 
+
