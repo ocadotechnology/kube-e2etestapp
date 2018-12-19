@@ -30,14 +30,3 @@ spec:
   tls:
   - hosts:
     - status.FIXME
-    secretName: status-ingress-cert
----
-# OPTIONAL: rip this/secretName part above out or update it if you aren't using kube-cert-manager.
-apiVersion: stable.k8s.psg.io/v1
-kind: Certificate
-metadata:
-  name: status-ingress
-spec:
-  domain: status.FIXME
-  provider: route53
-  secretName: status-ingress-cert
