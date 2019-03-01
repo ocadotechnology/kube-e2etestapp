@@ -29,7 +29,7 @@ class Service(ApiMixin):
                                 spec=client.V1ServiceSpec(ports=[
                                     client.V1ServicePort(port=10, target_port=e2e_globals.TEST_CONTAINER_PORT),
                                 ],
-                                    selector=e2e_globals.TEST_LABELS)
+                                    selector=e2e_globals.TEST_TEMPLATE_LABELS)
                                 )
 
     def _read_from_k8s(self, should_exist=True):

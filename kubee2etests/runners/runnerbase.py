@@ -34,10 +34,12 @@ class RunnerBaseWithDeployment(RunnerBase):
                  deployment,
                  replicas=e2e_globals.TEST_REPLICAS,
                  labels=e2e_globals.TEST_LABELS,
+                 template_labels=e2e_globals.TEST_TEMPLATE_LABELS,
                  cfgmap=e2e_globals.TEST_INDEX_NAME, **kwargs):
         super().__init__(namespace)
         self.labels = labels
-        self.deployment = Deployment(deployment, namespace, replicas, cfgmap, labels)
+        self.template_labels = template_labels
+        self.deployment = Deployment(deployment, namespace, replicas, cfgmap, labels, template_labels)
         self.cfgmap = ConfigMap(name=cfgmap,
                                 index=TEST_DEPLOYMENT_INDEX,
                                 namespace=self.namespace)

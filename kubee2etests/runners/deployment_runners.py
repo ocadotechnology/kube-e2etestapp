@@ -8,6 +8,7 @@ class DeploymentRunner(RunnerBase):
                  replicas=e2e_globals.TEST_REPLICAS, cfgmap_name=e2e_globals.TEST_INDEX_NAME,
                  cfgmap_index=e2e_globals.TEST_DEPLOYMENT_INDEX,
                  labels=e2e_globals.TEST_LABELS,
+                 template_labels=e2e_globals.TEST_TEMPLATE_LABELS,
                  volume_claim=None,
                  claim_storage=None,
                  **kwargs):
@@ -18,7 +19,8 @@ class DeploymentRunner(RunnerBase):
                                                 namespace,
                                                 replicas,
                                                 cfgmap_name,
-                                                labels)
+                                                labels,
+                                                template_labels)
         self.cfgmap = ConfigMap(name=cfgmap_name,
                                 index=cfgmap_index,
                                 namespace=namespace)
