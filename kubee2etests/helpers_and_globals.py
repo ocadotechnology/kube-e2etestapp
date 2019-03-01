@@ -59,8 +59,11 @@ TEST_VOLUME_CLAIM_NAME = 'test-claim'
 
 TEST_REPLICAS = 3
 CUSTOM_LABELS = ast.literal_eval(os.environ.get("CUSTOM_TEST_DEPLOYMENT_LABELS", '{}'))
+CUSTOM_TEMPLATE_LABELS = ast.literal_eval(os.environ.get("CUSTOM_TEST_DEPLOYMENT_TEMPLATE_LABELS", '{}'))
 TEST_LABELS = {'app': 'hellominikube'}
 TEST_LABELS.update(CUSTOM_LABELS)
+TEST_TEMPLATE_LABELS = {'app': 'hellominikube'}
+TEST_TEMPLATE_LABELS.update(CUSTOM_TEMPLATE_LABELS)
 TEST_CONTAINER_PORT = 80
 
 # time to wait for events before timing out, used in wait_on_event
