@@ -17,12 +17,14 @@ class Deployment(ApiMixin):
     def __init__(self, name, namespace, replicas=e2e_globals.TEST_REPLICAS,
                  cfgmap_name=e2e_globals.TEST_INDEX_NAME,
                  labels=e2e_globals.TEST_LABELS,
+                 template_labels=e2e_globals.TEST_TEMPLATE_LABELS,
                  vol_claim=None):
         super().__init__(namespace=namespace)
         self.name = name
         self.replicas = replicas
         self.cfgmap_name = cfgmap_name
         self.labels = labels
+        self.template_labels = template_labels
         self.vol_claim_name = vol_claim
         # Api used for deployment methods. Core api used for any pod methods
         self.extensions_api = client.ExtensionsV1beta1Api()
@@ -32,7 +34,7 @@ class Deployment(ApiMixin):
 
     @property
     def label_selector(self):
-        return ",".join(["%s=%s" % (key, value) for key, value in self.labels.items()])
+        return ",".join(["%s=%s" % (key, value) for key, value in self.template_labels.items()])
 
     @property
     def k8s_object(self):
@@ -50,7 +52,7 @@ class Deployment(ApiMixin):
                 ),
                 template=client.V1PodTemplateSpec(
                     metadata=client.V1ObjectMeta(
-                        labels=self.labels),
+                        labels=self.template_labels),
                     spec=client.V1PodSpec(
                         affinity=client.V1Affinity(
                             pod_anti_affinity=client.V1PodAntiAffinity(
