@@ -7,44 +7,20 @@ services:
 env:
   global:
   - REGISTRY_USER=ocadotechnologygitlab
-  - VERSION=$TRAVIS_TAG
   - VCS_SOURCE="https://github.com/${TRAVIS_REPO_SLUG}"
-  - secure: LCpnt+cUo6FXqCF77YF94xJZK1+P5cX/lPaCfvcQcB50Vf+/lqnuBv9fGlcxootlRlTnSC3gukszLR5nLMNdSJMqfDvbmbeUIg6bNKqWXc0BWoV+DjH5hhinrsu//T914Bs4VgQjtC0GHtVXoNzuB87C1SiFTtV0OXzpzlbtv59AXbP2fnH2OkPezXmJS+PhIzIttptUl07Z4bkaxcvW/hKuTtrUS2XtYgOQCD4biOdNLHmnvNE2byS3Bl3MBh8FQJq3ZCZMCOwVMH3ENNTXnlrWLg9dHSeFXVzVDoIS/jOhIRHCzqKOLj+zZcxVvf9cm/p+nntmK41AfiimFcQ6/1Bg9svTHsXS4GFwLIwmxs1LH4QZxpbSMln59bkCOjCuq6hzyfQsrk4knVWShYJUcLeKVUf69kTfD16l24NjaWXXc1Lrw2rxD2J6n2yIpBLoUkyrnGQLIqBWxBTqBe23zM19DJOyvsGRstEgQPWMLJGZ3dsb7RTBSuMJq4uZlb+YRRrYAPgk5Oq/DGMuFJapXe7DwEYoAhmBR8DqcDlSO+zl1K7KA7Khpx9PuPGiqOvRo+gyH+nsR2XyKvNEz3sbuA6t33/k7FJ2G5JcsHfFDZ4WmbVaCdWKz6zw8GdAHQSBUNmWG2htoI7KZs6WtuYU4i5ZMYJSdDCsoOkEKM0moOs=
-before_script:
-- docker pull "$TRAVIS_REPO_SLUG" || true
+  - SNYK_MODE=WARN
+  - secure: "LCpnt+cUo6FXqCF77YF94xJZK1+P5cX/lPaCfvcQcB50Vf+/lqnuBv9fGlcxootlRlTnSC3gukszLR5nLMNdSJMqfDvbmbeUIg6bNKqWXc0BWoV+DjH5hhinrsu//T914Bs4VgQjtC0GHtVXoNzuB87C1SiFTtV0OXzpzlbtv59AXbP2fnH2OkPezXmJS+PhIzIttptUl07Z4bkaxcvW/hKuTtrUS2XtYgOQCD4biOdNLHmnvNE2byS3Bl3MBh8FQJq3ZCZMCOwVMH3ENNTXnlrWLg9dHSeFXVzVDoIS/jOhIRHCzqKOLj+zZcxVvf9cm/p+nntmK41AfiimFcQ6/1Bg9svTHsXS4GFwLIwmxs1LH4QZxpbSMln59bkCOjCuq6hzyfQsrk4knVWShYJUcLeKVUf69kTfD16l24NjaWXXc1Lrw2rxD2J6n2yIpBLoUkyrnGQLIqBWxBTqBe23zM19DJOyvsGRstEgQPWMLJGZ3dsb7RTBSuMJq4uZlb+YRRrYAPgk5Oq/DGMuFJapXe7DwEYoAhmBR8DqcDlSO+zl1K7KA7Khpx9PuPGiqOvRo+gyH+nsR2XyKvNEz3sbuA6t33/k7FJ2G5JcsHfFDZ4WmbVaCdWKz6zw8GdAHQSBUNmWG2htoI7KZs6WtuYU4i5ZMYJSdDCsoOkEKM0moOs="
+  - secure: "FJA2w1vsprgmVlViuh3kqdsw1zUIvpkKCwXTJRoBuFFSrNEdBO9ElNhQ0hlH1S6OeEjIsK6idjYBx45Vre5fmglLXpM/zwskqx2FcLetM9i9/7xYCmF+irMsXEgwd8v+2qx418Ad9YWOZwQqEMkUQ+fjt1HcyTACpQBfcQsTFzRguB7M2AvI+zpoTV/LX4CiAcID2dARqW4YN5aVDvPMyZSxmko29RnmLUO6r+rbSEBRJY31pj98UWGNHmQ7hy3/sig3JhJ6lmnjryXhTlYr9skr2xsxT0Xif/MWK0uERit8iWKQ2hBq3IZ+VZ70RWq2KJeW70iynYsn0p5Eyy2dy8bXsyG3e7uxoeUToG/z753nlgy5NIml4c4yoBYbPTAsFV6sEH13tKkgiXtPIA4ApHxXcV6Plp6o6G0e/foFXrt2MdaURFjmZT7lUFe3X9ux737x9HVrt1o4zO4lfYRIQKYMuubMFhI/JDezKCRsKUZF/vVJfperNOtf/p8OB2pkOjp1IE50DQTUw27I/2f52kIfU61+xZaxPG/rWLrX1tZ/qAW/adp/E0LbV978LVdC04YLZa0xGe05hN2ySAHlvvTa7t9xkScMaOUttpYXH4hCNLJ6+R1gpiKr4CFf4dwT/mL4aajprDpiVwzxqIYwH6XdHVp0Y3s1mfufxLo6Vas="
+  - secure: "XZWAgGvLiLIB0w0l8imThIKqPlSDfRGj9bxYFAifSaPiXNtBvmtQotpzlbhWrhbkUdHAwZaDnI1S+2n9r/hzMP6ATDFKfO2r+9EvqJ1OpVhKkiX6Cwcd680EYGatizhKPQGQ0ta99vV36LG5qg6NjV1bS9CQqnCBuqQajZ/15dy1O2LcGwnte7+Dzvu32RjbwZ0G5mAyM+iJMYSQTiPjeDDN/qHFtoz6wWv7siz/OopR4KDgWaVkWJQ32N5uTqzL/b5bTucwiPo6tSrXeU/8sqrcdWawQ8CkCPfVbu2yEBpjTbhFoJO6vZ6nbbMeMRyM5XN6CtvvdtrhZh6hPzNuFmKmuDr1qcgnKoYTHiiwzhZ8JTxvo9yZiqcXhlsPD+Q1o9RTrhgt5iwhzt7AmMRxVAb+H9aB6W5LqD6dY4v30W7IQIdhp6cNsBr1tJn6iBN+UC3TdZgAgPJ9B4BQrbmvWg7CRaFdBikmqJ+epMHx+hGcoCd07n2UNnMUQzHzOOaXiVvwCB8LpZ3GiVD+nZkD7bbFoGAkZLsMDuKFMd5dkPUlJw1+B8ZVR8QyJpAn6pdhwoz7wfimByU2SNMkdjqmZGg582xYOcYacYXNRVGVgmu6/doOQrny2jcxCgQqLmv2x7Aotp75t1Y0WgfvhhM44aOCjsz5kJNp8Dx9bUPrx0E="
 script:
-- |
-  if [ -n "${TRAVIS_TAG}" ]; then
-    VERSION=$TRAVIS_COMMIT
-  fi
-- |
-  docker build --pull --cache-from "$TRAVIS_REPO_SLUG" --tag "$TRAVIS_REPO_SLUG" \
-  --label="org.label-schema.build-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  --label="org.label-schema.vendor=Ocado Technology" \
-  --label="org.label-schema.schema-version=1.0" \
-  --label="org.label-schema.vcs-url=${VCS_SOURCE}" \
-  --label="org.label-schema.version=${VERSION}" \
-  --label="org.label-schema.vcs-ref=${TRAVIS_COMMIT}" \
-  --label="org.opencontainers.image.created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  --label="org.opencontainers.image.vendor=Ocado Technology" \
-  --label="org.opencontainers.image.source=${VCS_SOURCE}" \
-  --label="org.opencontainers.image.version=${VERSION}" \
-  --label="org.opencontainers.image.revision=${TRAVIS_COMMIT}" \
-  --label="org.opencontainers.image.authors=$(git log --format='%aE' Dockerfile | sort -u | tr '\n' ' ')" \
-  .
+- npm install -g snyk
 - python setup.py test
+- ./.travis/docker-build.sh
 after_script:
 - docker images
-before_deploy:
-- docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
-- |
-  if [ "${TRAVIS_TAG}" ]; then
-    docker tag "${TRAVIS_REPO_SLUG}" "${TRAVIS_REPO_SLUG}:${TRAVIS_TAG}"
-  fi
-- docker tag "${TRAVIS_REPO_SLUG}" "${TRAVIS_REPO_SLUG}:latest"
-- docker tag "${TRAVIS_REPO_SLUG}" "${TRAVIS_REPO_SLUG}:${TRAVIS_COMMIT}"
 deploy:
   provider: script
   script: bash .travis/docker-push.sh
   on:
     branch: master
+    tags: true
